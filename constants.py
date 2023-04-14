@@ -1,3 +1,15 @@
+MINUTE = 60
+HOUR = 60 * MINUTE
+DAY = 24 * HOUR
+WEEK = 7 * DAY
+
+GRANULARITY_TO_NAME = {
+    MINUTE: 'minute',
+    HOUR: 'hour',
+    DAY: 'day',
+    WEEK: 'week',
+}
+
 AVG_BLOCK_TIME = {
     'bitcoin': 10 * 60,
     'ethereum': 15,
@@ -12,6 +24,7 @@ AVG_FEES = {
         'trading': {
             'binance-fee': 0.001,
             'coinbase-fee': 0.006,
+            'huoby-fee': 0.002,
         }
     },
     'absolute': {

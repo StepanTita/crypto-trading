@@ -1,4 +1,5 @@
 from common.utils import get_blockchain
+import numpy as np
 
 
 class Fees:
@@ -12,8 +13,13 @@ class Fees:
             platform_fee = self.fees_api.trading_fees(base_asset, quote_asset, amount, price)
         else:
             platform_fee = self.fees_data['relative']['trading'][f'{base_asset.platform}-fee'] * amount * price
-        sender_fee = self.fees_data['absolute']['transaction'][f'{get_blockchain(base_asset)}-fee']
-        receiver_fee = self.fees_data['absolute']['transaction'][f'{get_blockchain(quote_asset)}-fee']
+
+        # normal random here is to simulate minor fee price fluctuations
+        sender_fee = self.fees_data['absolute']['transaction'][f'{get_blockchain(base_asset)}-fee'] * np.random.normal(
+            loc=1, scale=0.1)
+        receiver_fee = self.fees_data['absolute']['transaction'][
+                           f'{get_blockchain(quote_asset)}-fee'] * np.random.normal(
+            loc=1, scale=0.1)
 
         if base_asset.platform != quote_asset.platform:
             return ([

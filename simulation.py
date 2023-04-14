@@ -1,13 +1,10 @@
 import datetime
 import copy
 
+from asset import Asset
 from blockchain_logger import logger
 from common.utils import *
-
-MINUTE = 60
-HOUR = 60 * MINUTE
-DAY = 24 * HOUR
-WEEK = 7 * DAY
+from constants import *
 
 
 def simulate(fn):
@@ -16,32 +13,45 @@ def simulate(fn):
     :return: report of the arbitrage trading for the given data
     """
 
-    def wrapper(blockchain, start_timestamp, end_timestamp, portfolio, *args, **kwargs):
-
+    def wrapper(blockchain, start_timestamp, end_timestamp, step, portfolio,
+                primary_granularity=DAY,
+                secondary_granularity=WEEK,
+                *args, **kwargs):
+        logger.info('Running simulation...')
         report = {
             **{
+                'predicted': [],
+                'real': [],
                 'coins': [],
                 'dates': [],
-                'weeks': [],
             },
         }
 
+        total_usdt_before = 0
+        for platform, wallet in portfolio.items():
+            for asset, value in wallet.items():
+                total_usdt_before += blockchain.exchanger.exchange(start_timestamp, Asset(asset, platform),
+                                                                   Asset('USDT', platform)) * value
+        logger.info(yellow(f'Total USDT before arbitrage: {total_usdt_before}'))
+
         timestamp = start_timestamp
 
-        week_start = copy.deepcopy(portfolio)
+        secondary_granularity_data = copy.deepcopy(portfolio)
 
-        last_week_timestamp = start_timestamp
-        last_day_timestamp = start_timestamp
+        last_secondary_timestamp = start_timestamp
+        last_primary_timestamp = start_timestamp
         while timestamp < end_timestamp:
             logger.debug(yellow(f'Timestamp: {datetime.datetime.fromtimestamp(timestamp)}'))
 
-            next_timestamp = timestamp + 60
-            next_timestamp, max_benefit, coins = fn(blockchain, next_timestamp, portfolio, *args, **kwargs)
+            next_timestamp, max_benefit, real_benefit, coins = fn(blockchain, timestamp, portfolio, *args, **kwargs)
+            if next_timestamp == timestamp:  # if we didn't really trade, then just go to the next period
+                next_timestamp = timestamp + step
 
             # Report formation:
             if max_benefit > 0:
+                report['predicted'].append(max_benefit)
+                report['real'].append(real_benefit)
                 report['coins'].append('-'.join(map(lambda x: x.symbol + f'({x.platform})', coins)))
-                report['weeks'].append((timestamp - start_timestamp) // WEEK)
                 report['dates'].append(datetime.datetime.fromtimestamp(timestamp))
                 for platform, wallet in portfolio.items():
                     for asset, value in wallet.items():
@@ -49,38 +59,59 @@ def simulate(fn):
                             report[f'{platform}_{asset}'] = []
                             report[f'{platform}_{asset}_change'] = []
                         report[f'{platform}_{asset}'].append(value)
-                        report[f'{platform}_{asset}_change'].append(value - week_start[platform].get(asset, 0))
+                        report[f'{platform}_{asset}_change'].append(
+                            value - secondary_granularity_data[platform].get(asset, 0))
 
-            if (timestamp - last_day_timestamp) // DAY >= 1:
-                logger.info(blue(underline(f'Day: {(timestamp - start_timestamp) // DAY}')))
-                last_day_timestamp = timestamp
+            if (timestamp - last_primary_timestamp) // primary_granularity >= 1:
+                logger.info(blue(underline(
+                    f'{GRANULARITY_TO_NAME[primary_granularity]}: {(timestamp - start_timestamp) // primary_granularity}')))
+                last_primary_timestamp = timestamp
 
-            if (timestamp - last_week_timestamp) // WEEK >= 1:
+            if (timestamp - last_secondary_timestamp) // secondary_granularity >= 1:
                 logger.info(30 * '*')
-                logger.info(pink(underline(f'Week {(timestamp - start_timestamp) // WEEK} start:')))
-                for platform, wallet in week_start.items():
+                logger.info(pink(underline(
+                    f'{GRANULARITY_TO_NAME[secondary_granularity]} {(timestamp - start_timestamp) // secondary_granularity} start:')))
+
+                for platform, wallet in secondary_granularity_data.items():
                     for asset, value in wallet.items():
-                        logger.info(f'> {asset} : {value}')
-                logger.info('Week end:')
-                for asset, value in portfolio.items():
-                    logger.info(f'> {asset} : {value}')
+                        logger.info(f'> {asset} ({platform}) : {value}')
+                logger.info(pink(f'{GRANULARITY_TO_NAME[secondary_granularity]} end:'))
+
+                for platform, wallet in portfolio.items():
+                    for asset, value in wallet.items():
+                        logger.info(f'> {asset} ({platform}) : {value}')
 
                 logger.info('Benefit:')
                 for platform, wallet in portfolio.items():
                     for asset, value in wallet.items():
-                        if float(wallet[asset]) - week_start[platform].get(asset, 0) > 0:
+                        if float(wallet[asset]) - secondary_granularity_data[platform].get(asset, 0) > 0:
                             logger.info(green(
-                                f'> {platform} {asset}: {float(wallet[asset]) - week_start[platform].get(asset, 0)}'))
+                                f'> {asset} ({platform}): {float(wallet[asset]) - secondary_granularity_data[platform].get(asset, 0)}'))
                         else:
                             logger.info(
                                 yellow(
-                                    f'> {platform} {asset}: {float(wallet[asset]) - week_start[platform].get(asset, 0)}'))
+                                    f'> {asset} ({platform}): {float(wallet[asset]) - secondary_granularity_data[platform].get(asset, 0)}'))
 
-                week_start = copy.deepcopy(portfolio)
+                secondary_granularity_data = copy.deepcopy(portfolio)
                 logger.info(30 * '*')
-                last_week_timestamp = timestamp
+                last_secondary_timestamp = timestamp
 
             timestamp = next_timestamp
+
+        total_usdt_after = 0
+        for platform, wallet in portfolio.items():
+            for asset, value in wallet.items():
+                total_usdt_after += blockchain.exchanger.exchange(start_timestamp, Asset(asset, platform),
+                                                                   Asset('USDT', platform)) * value
+        logger.info(yellow(f'Total USDT after arbitrage: {total_usdt_after}'))
+
+        if total_usdt_after - total_usdt_before < 0:
+            logger.info(red(f'Negative profit: {total_usdt_after - total_usdt_before}'))
+        elif total_usdt_after - total_usdt_before == 0:
+            logger.info(yellow(f'No profit: {total_usdt_after - total_usdt_before}'))
+        else:
+            logger.info(green(f'Profit: {total_usdt_after - total_usdt_before}'))
+
         return report
 
     return wrapper

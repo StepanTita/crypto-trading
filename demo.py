@@ -12,14 +12,16 @@ from asset import Asset
 from blockchain import Blockchain
 from blockchain_logger import logger
 from common.utils import red, json_keys_to_int, green
-from constants import AVG_FEES
 from runner import Runner
 from simulation import simulate
+from constants import *
+from exchanges.arbitrage_pairs import arbitrage_pairs
 
 
 @simulate
 def strategy_simple_triangle(blockchain, timestamp, portfolio, platform, symbols, max_trade_ratio, min_spread=0.015):
     max_benefit = 0
+    real_benefit = 0
 
     best_trade = None
 
@@ -57,6 +59,7 @@ def strategy_simple_triangle(blockchain, timestamp, portfolio, platform, symbols
             return timestamp, max_benefit, [best_start, best_interm, best_benefiter]
 
         timestamp = run_timestamp
+        real_benefit = best_trade - result
 
         logger.info(f'{datetime.datetime.fromtimestamp(timestamp)} {best_start} {best_interm} {best_benefiter}')
         logger.info(f'Trade {best_trade}')
@@ -72,12 +75,13 @@ def strategy_simple_triangle(blockchain, timestamp, portfolio, platform, symbols
             logger.info(green(f'Benefit {best_trade - result}'))
 
         portfolio[platform][best_start.symbol] += best_trade - result
-    return timestamp, max_benefit, [best_start, best_interm, best_benefiter]
+    return timestamp, max_benefit, real_benefit, [best_start, best_interm, best_benefiter]
 
 
 @simulate
 def strategy_between_platforms(blockchain, timestamp, portfolio, symbols, platforms, max_trade_ratio, min_spread=0.005):
     max_benefit = 0
+    real_benefit = 0
 
     best_trade = None
 
@@ -124,6 +128,7 @@ def strategy_between_platforms(blockchain, timestamp, portfolio, symbols, platfo
             return timestamp, max_benefit, [best_from, best_to]
 
         timestamp = run_timestamp
+        real_benefit = best_trade - result
 
         logger.info(f'{datetime.datetime.fromtimestamp(timestamp)} {best_from} {best_to}')
         logger.info(f'Trade {best_trade}')
@@ -136,7 +141,7 @@ def strategy_between_platforms(blockchain, timestamp, portfolio, symbols, platfo
         portfolio[best_from.platform][best_from.symbol] -= result
         portfolio[best_to.platform][best_from.symbol] = portfolio[best_to.platform].get(best_from.symbol,
                                                                                         0) + best_trade
-    return timestamp, max_benefit, [best_from, best_to]
+    return timestamp, max_benefit, real_benefit, [best_from, best_to]
 
 
 @simulate
@@ -148,6 +153,7 @@ def strategy_bellman_ford(blockchain, timestamp, portfolio, platforms, symbols, 
     adj_list, nodes_mapping = assets_to_adj_list(assets, timestamp, blockchain.exchanger)
 
     max_benefit = 0
+    real_benefit = 0
     best_trade = None
     best_cycle = None
 
@@ -187,6 +193,7 @@ def strategy_bellman_ford(blockchain, timestamp, portfolio, platforms, symbols, 
             return timestamp, 0, []
 
         timestamp = run_timestamp
+        real_benefit = best_trade - result
 
         logger.info(f'{datetime.datetime.fromtimestamp(timestamp)} {best_cycle}')
         logger.info(f'Trade {best_trade}')
@@ -200,7 +207,58 @@ def strategy_bellman_ford(blockchain, timestamp, portfolio, platforms, symbols, 
         portfolio[best_cycle[-1].platform][best_start.symbol] = portfolio[best_cycle[-1].platform].get(
             best_start.symbol,
             0) + best_trade
-    return timestamp, max_benefit, best_cycle
+    return timestamp, max_benefit, real_benefit, best_cycle
+
+
+def example1(blockchain, platforms, start_timestamp, end_timestamp):
+    report = strategy_simple_triangle(blockchain, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
+                                      step=MINUTE,
+                                      portfolio={
+                                          'coinbase': {
+                                              'USDT': 1000,
+                                          }
+                                      }, platform=platforms[0], symbols=['USDT', 'BTC', 'LTC', 'ETH'],
+                                      max_trade_ratio=0.5, min_spread=0.001)
+    logger.info(report)
+    pd.DataFrame(report).to_csv('report-triangle.csv')
+
+
+def example2(blockchain, platforms, start_timestamp, end_timestamp):
+    report = strategy_between_platforms(blockchain, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
+                                        step=MINUTE,
+                                        portfolio={
+                                            'binance': {
+                                                'USDT': 1000,
+                                                'BTC': 0.5,
+                                                'LTC': 10,
+                                            },
+                                            'coinbase': {
+                                                'USDT': 1000,
+                                                'BTC': 0.5,
+                                                'LTC': 10,
+                                            }
+                                        }, symbols=['USDT', 'BTC', 'LTC', 'ETH'], platforms=platforms,
+                                        max_trade_ratio=0.5,
+                                        min_spread=0.0005)
+    logger.info(report)
+    pd.DataFrame(report).to_csv('report-between-platforms.csv')
+
+
+def example3(blockchain, platforms, start_timestamp, end_timestamp):
+    report = strategy_bellman_ford(blockchain, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
+                                   step=HOUR, primary_granularity=HOUR, secondary_granularity=DAY, portfolio={
+            'binanceus': {
+                'USDT': 1000,
+            },
+            'bybit': {
+                'USDT': 1000,
+            },
+            'huobi': {
+                'USDT': 1000,
+            }
+        }, platforms=platforms, symbols=['USDT', 'BTC', 'LTC', 'ETH'], max_trade_ratio=0.5, min_spread=0.001)
+    logger.info(report)
+    pd.DataFrame(report).to_csv('report-bellman-ford.csv', index=False)
 
 
 def main():
@@ -209,67 +267,35 @@ def main():
         'binance': dict(),
     }
 
-    with open('./data/coinbase_prices.json', 'r') as f:
-        prices_data['coinbase'] = json.load(f, object_hook=json_keys_to_int)
+    use_data = False
+    if use_data:
+        with open('./data/coinbase_prices.json', 'r') as f:
+            prices_data['coinbase'] = json.load(f, object_hook=json_keys_to_int)
 
-    with open('./data/binance_prices.json', 'r') as f:
-        prices_data['binance'] = json.load(f, object_hook=json_keys_to_int)
+        with open('./data/binance_prices.json', 'r') as f:
+            prices_data['binance'] = json.load(f, object_hook=json_keys_to_int)
 
-    platforms = ['binance', 'coinbase']  # 'binanceus', 'bybit'
-    # prices_api = ExchangesAPI(platforms)
+    platforms = ['binanceus', 'bybit', 'huobi']  # 'binanceus', 'bybit'
 
-    blockchain = Blockchain(prices_api=None, fees_data=AVG_FEES, prices_data=prices_data)
+    arbitrage_pairs(platforms, symbols=['BTC/USDT', 'LTC/BTC', 'ETH/BTC', 'ETH/USDT', 'LTC/USDT'])
 
-    print('Running simulation...')
+    prices_api = None
+    if not use_data:
+        prices_api = ExchangesAPI(platforms)
 
-    start_date = datetime.datetime.strptime('2022-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+    blockchain = Blockchain(prices_api=prices_api, fees_data=AVG_FEES, prices_data=prices_data)
+
+    start_date = datetime.datetime.strptime('2023-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
     start_timestamp = int(datetime.datetime.timestamp(start_date))
 
-    end_date = datetime.datetime.strptime('2023-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+    end_date = datetime.datetime.strptime('2023-01-07 00:00:00', '%Y-%m-%d %H:%M:%S')
     end_timestamp = int(datetime.datetime.timestamp(end_date))
 
-    # report = strategy_simple_triangle(blockchain, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-    #                                   portfolio={
-    #                                       'coinbase': {
-    #                                           'USDT': 1000,
-    #                                       }
-    #                                   }, platform='coinbase', symbols=['USDT', 'BTC', 'LTC', 'ETH'],
-    #                                   max_trade_ratio=0.5, min_spread=0.001)
-    # print(report)
-    # pd.DataFrame(report).to_csv('report-triangle.csv')
+    # example1(blockchain, ['binance'], start_timestamp, end_timestamp)
+    #
+    # example2(blockchain, ['binance', 'coinbase'], start_timestamp, end_timestamp)
 
-    # report = strategy_between_platforms(blockchain, start_timestamp=start_timestamp, end_timestamp=end_timestamp,
-    #                                     portfolio={
-    #                                         'binance': {
-    #                                             'USDT': 1000,
-    #                                             'BTC': 0.5,
-    #                                             'LTC': 10,
-    #                                         },
-    #                                         'coinbase': {
-    #                                             'USDT': 1000,
-    #                                             'BTC': 0.5,
-    #                                             'LTC': 10,
-    #                                         }
-    #                                     }, symbols=['USDT', 'BTC', 'LTC', 'ETH'], platforms=platforms,
-    #                                     max_trade_ratio=0.5,
-    #                                     min_spread=0.0005)
-    # print(report)
-    # pd.DataFrame(report).to_csv('report-between-platforms.csv')
-
-    report = strategy_bellman_ford(blockchain, start_timestamp=start_timestamp, end_timestamp=end_timestamp, portfolio={
-        'binance': {
-            'USDT': 1000,
-            'BTC': 0.5,
-            'LTC': 10,
-        },
-        'coinbase': {
-            'USDT': 1000,
-            'BTC': 0.5,
-            'LTC': 10,
-        }
-    }, platforms=platforms, symbols=['USDT', 'BTC', 'LTC', 'ETH'], max_trade_ratio=0.5, min_spread=0.015)
-    logger.info(report)
-    pd.DataFrame(report).to_csv('report-bellman-ford.csv', index=False)
+    example3(blockchain, platforms, start_timestamp, end_timestamp)
 
 
 if __name__ == '__main__':

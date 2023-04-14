@@ -34,19 +34,10 @@ eh.setLevel(logging.ERROR)
 dh = logging.StreamHandler()
 dh.setLevel(logging.DEBUG)
 
-# ih = logging.StreamHandler()
-# ih.setLevel(logging.INFO)
-
-# eh.setFormatter(CustomFormatter())
-# wh.setFormatter(CustomFormatter())
 dh.setFormatter(CustomFormatter())
-# ih.setFormatter(CustomFormatter())
 
 # link handler to logger
-# logger.addHandler(eh)
-# logger.addHandler(wh)
 logger.addHandler(dh)
-# logger.addHandler(ih)
 
 # Set logging level to the logger
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
