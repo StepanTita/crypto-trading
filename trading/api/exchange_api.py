@@ -3,9 +3,9 @@ import datetime
 import ccxt
 import numpy as np
 
-from api.utils import cached_exchanges, cached_fees, log_continue
-from asset import Asset
-from retrier.retry import retry_with_exponential_backoff, ccxt_errors
+from trading.api.utils import cached_exchanges, cached_fees, log_continue
+from trading.blockchain.asset import Asset
+from trading.retrier.retry import retry_with_exponential_backoff, ccxt_errors
 
 
 class ExchangesAPI:

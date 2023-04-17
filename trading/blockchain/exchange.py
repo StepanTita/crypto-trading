@@ -2,7 +2,7 @@ import datetime
 
 import numpy as np
 
-from asset import Asset
+from .asset import Asset
 
 
 class Exchanger:
@@ -32,7 +32,7 @@ class Exchanger:
 
 
 def main():
-    from api.exchange_api import ExchangesAPI
+    from trading.api.exchange_api import ExchangesAPI
     # binanceus, bybit, huobi
     api = ExchangesAPI(['binanceus', 'bybit'])
     ex = Exchanger(api=api)

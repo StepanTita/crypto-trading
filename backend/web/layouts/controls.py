@@ -3,14 +3,39 @@ from dash import html
 from datetime import date, datetime
 
 
-def create_controls():
-    return html.Div(
+def create_controls(config):
+    return dmc.LoadingOverlay(html.Div(
         id='controls',
         children=[
             html.Div(className='row', children=[
+                html.Div(className='full', children=[
+                    dmc.Select(id='select-strategy-select-control', label='Select strategy',
+                               value='bellman-ford',
+                               data=config.get('STRATEGIES'))
+                ])
+            ]),
+            html.Div(className='row', children=[
+                html.Div(className='half column', children=[
+                    html.Div(id='select-primary-granularity-control', children=[
+                        dmc.Select(id='select-primary-granularity-select-control', label='Select primary granularity',
+                                   value=60,
+                                   data=config.get('GRANULARITIES'))
+                    ])
+                ]),
+                html.Div(className='half column', children=[
+                    html.Div(id='select-secondary-granularity-control', children=[
+                        dmc.Select(id='select-secondary-granularity-select-control',
+                                   label='Select secondary granularity',
+                                   value=60,
+                                   data=config.get('GRANULARITIES'))
+                    ])
+                ])
+
+            ]),
+            html.Div(className='row', children=[
                 html.Div(className='half column', children=[
                     dmc.DateRangePicker(
-                        id='date-range-picker',
+                        id='date-range-picker-control',
                         label='Date Range',
                         minDate=date(2021, 1, 1),
                         maxDate=datetime.now().date(),
@@ -22,14 +47,8 @@ def create_controls():
                             dmc.MultiSelect(
                                 id='multiselect-platforms-select-control',
                                 label='Select platforms',
-                                value=['binanceus'],
-                                data=[
-                                    {'value': 'binanceus', 'label': 'Binance US'},
-                                    {'value': 'binance', 'label': 'Binance'},
-                                    {'value': 'coinbase', 'label': 'Coinbase'},
-                                    {'value': 'bybit', 'label': 'ByBit'},
-                                    {'value': 'kraken', 'label': 'Kraken'},
-                                ],
+                                value=['binanceus', 'bybit'],
+                                data=config.get('PLATFORMS'),
                             ),
                         ]),
                     ]),
@@ -40,6 +59,7 @@ def create_controls():
                 html.Div(id='time-range-controls', className='half column', children=[
                     html.Div(id='time-start-control', className='column', children=[
                         dmc.TimeInput(
+                            id='start-timestamp-timeinput-control',
                             label='Start time:',
                             withSeconds=True,
                             value=datetime(2020, 1, 1, 0, 0, 0),
@@ -47,6 +67,7 @@ def create_controls():
                     ]),
                     html.Div(id='time-end-control', className='half column', children=[
                         dmc.TimeInput(
+                            id='end-timestamp-timeinput-control',
                             label='End time:',
                             withSeconds=True,
                             value=datetime(2020, 1, 1, 0, 0, 0),
@@ -60,12 +81,7 @@ def create_controls():
                                 id='multiselect-assets-select-control',
                                 label='Select symbols',
                                 value=['BTC', 'USDT', 'ETH', 'LTC'],
-                                data=[
-                                    {'value': 'BTC', 'label': 'BTC'},
-                                    {'value': 'USDT', 'label': 'USDT'},
-                                    {'value': 'ETH', 'label': 'ETH'},
-                                    {'value': 'LTC', 'label': 'LTC'},
-                                ],
+                                data=config.get('ASSETS'),
                             ),
                         ]),
                     ])
@@ -82,11 +98,14 @@ def create_controls():
                             html.Div(className='row', children=[
                                 dmc.Slider(
                                     id='slider-min-spread-control',
-                                    value=26,
+                                    min=0,
+                                    max=10,
+                                    step=0.1,
+                                    value=0.5,
                                     marks=[
-                                        {'value': 20, 'label': '20%'},
-                                        {'value': 50, 'label': '50%'},
-                                        {'value': 80, 'label': '80%'},
+                                        {'value': 2.5, 'label': '2.5%'},
+                                        {'value': 5, 'label': '5%'},
+                                        {'value': 7.5, 'label': '7.5%'},
                                     ],
                                     mb=35,
                                 ),
@@ -120,10 +139,11 @@ def create_controls():
                 dmc.Group(children=[
                     dmc.Button('Run!', id='run-button-control', variant="gradient"),
                     dmc.Button('View Arbitrages', id='view-arbitrage-button-control', variant="gradient"),
-                    dmc.Checkbox(label='Enable fees estimation?')
+                    dmc.Checkbox(id='use-fees-checkbox-control', label='Enable fees estimation?', checked=False)
                 ]),
             ])
         ]
+    ), loaderProps={'variant': 'bars', 'color': 'blue', 'size': 'xl'},
     )
 
 
@@ -137,4 +157,14 @@ def create_step_control():
             {'value': 80, 'label': '80%'},
         ],
         mb=35,
+    )
+
+
+def create_progress_bar(value):
+    return dmc.Progress(
+        id='simulation-progress-bar-control',
+        animate=True,
+        label=f'{value}%',
+        value=value,
+        size='xl',
     )

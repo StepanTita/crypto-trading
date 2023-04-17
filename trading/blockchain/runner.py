@@ -1,9 +1,9 @@
 from typing import List
 
-from asset import Asset
-from blockchain import Blockchain, get_blocktime
-from blockchain_logger import logger
-from common.utils import conform_timestamp, get_blockchain
+from .asset import Asset
+from .blockchain import Blockchain, get_blocktime
+from trading.common.blockchain_logger import logger
+from trading.common.utils import conform_timestamp, get_blockchain
 
 
 class Runner:

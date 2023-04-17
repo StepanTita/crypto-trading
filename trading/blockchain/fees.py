@@ -1,13 +1,18 @@
-from common.utils import get_blockchain
+from trading.common.utils import get_blockchain
 import numpy as np
 
 
 class Fees:
-    def __init__(self, fees_data=None, fees_api=None):
+    def __init__(self, fees_data=None, fees_api=None, disable_fees=False):
         self.fees_data = fees_data
         self.fees_api = fees_api
+        self.disable_fees = disable_fees
 
     def calc_fees(self, base_asset, quote_asset, amount, price):
+        # need only for testing purposes
+        if self.disable_fees:
+            return [0], 0, 0
+
         # some exchanges might return the result not in terms of the quote asset, then we should force it
         if self.fees_api is not None:
             platform_fee = self.fees_api.trading_fees(base_asset, quote_asset, amount, price)
@@ -35,11 +40,11 @@ class Fees:
 
 
 def main():
-    from api.exchange_api import ExchangesAPI
+    from trading.api.exchange_api import ExchangesAPI
     # binanceus, bybit, huobi, gemini
     api = ExchangesAPI(['gemini'])
 
-    from constants import AVG_FEES
+    from trading.common.constants import AVG_FEES
     fees = Fees(fees_data=AVG_FEES, fees_api=api)
 
     import datetime

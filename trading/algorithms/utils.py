@@ -2,8 +2,8 @@ from typing import List, Tuple, Dict
 
 import numpy as np
 
-from asset import Asset
-from exchange import Exchanger
+from trading.blockchain.asset import Asset
+from trading.blockchain.exchange import Exchanger
 
 
 def assets_to_adj_list(assets: List[Asset], timestamp: int, exchanger: Exchanger) -> Tuple[

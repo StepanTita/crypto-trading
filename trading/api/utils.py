@@ -1,12 +1,10 @@
 from collections import defaultdict
-
 from functools import partial
 from itertools import repeat
 
 import numpy as np
 
-from blockchain_logger import logger
-from common.utils import red
+from trading.common.blockchain_logger import logger
 
 
 def nested_defaultdict(default_factory, depth=1):

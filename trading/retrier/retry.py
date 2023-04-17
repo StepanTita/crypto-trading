@@ -4,8 +4,7 @@ from functools import wraps
 
 import ccxt
 
-from blockchain_logger import logger
-from common.utils import yellow
+from trading.common.blockchain_logger import logger
 
 ccxt_errors = (
     ccxt.ExchangeError, ccxt.AuthenticationError, ccxt.ExchangeNotAvailable, ccxt.RequestTimeout, ccxt.DDoSProtection)

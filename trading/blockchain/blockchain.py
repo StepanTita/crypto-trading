@@ -1,10 +1,10 @@
 import datetime
 
-from asset import Asset
-from blockchain_logger import logger
-from constants import *
-from exchange import Exchanger
-from fees import Fees
+from .asset import Asset
+from trading.common.blockchain_logger import logger
+from trading.common.constants import *
+from .exchange import Exchanger
+from .fees import Fees
 
 
 def get_blocktime(blockchain):
@@ -12,9 +12,9 @@ def get_blocktime(blockchain):
 
 
 class Blockchain:
-    def __init__(self, prices_data=None, prices_api=None, fees_data=None):
+    def __init__(self, prices_data=None, prices_api=None, fees_data=None, disable_fees=False):
         self.exchanger = Exchanger(data=prices_data, api=prices_api)
-        self.fees = Fees(fees_data=fees_data, fees_api=prices_api)
+        self.fees = Fees(fees_data=fees_data, fees_api=prices_api, disable_fees=disable_fees)
 
     def calc_transaction(self, timestamp, base_asset, quote_asset, amount):
         logger.debug(f'Transaction amount in base asset: {base_asset.symbol}, {amount}')
@@ -45,7 +45,7 @@ class Blockchain:
 
 
 def main():
-    from api.exchange_api import ExchangesAPI
+    from trading.api.exchange_api import ExchangesAPI
     # binanceus, bybit, huobi
     api = ExchangesAPI(['bybit', 'binanceus'])
     blockchain = Blockchain(prices_api=api, fees_data=AVG_FEES)

@@ -5,14 +5,31 @@ from dash import html
 
 import plotly.graph_objects as go
 
-from .controls import create_controls, create_step_control
+from .controls import create_controls, create_step_control, create_progress_bar
 from .tables import create_arbitrage_table, create_report_table
 
 
 # TODO: add arbitrable pairs table
-def create_graph_layout():
+def create_graph_layout(config):
     return [
-        create_controls(),
+        dmc.LoadingOverlay(
+            html.Div(
+                create_controls(config), id='loading-controls'),
+            loaderProps={'variant': 'bars', 'color': 'blue', 'size': 'xl'},
+        ),
+
+        html.Div(children=[
+            # html.Div(className='row table-title', children=[
+            #     dmc.Title('Progress')
+            # ]),
+
+            html.Div(className='row', children=[
+                html.Div(id='simulation-progress-bar', className='column', children=[
+                    create_progress_bar(0)
+                ])
+            ]),
+        ]),
+
         html.Div(className='row', children=[
             html.Div(id='arbitrage-table', children=[
                 dmc.Divider(),
@@ -42,14 +59,16 @@ def create_graph_layout():
 
         dmc.Divider(),
 
-        html.Div(className='row table-title', children=[
-            dmc.Title('Step slider')
-        ]),
+        html.Div(children=[
+            html.Div(className='row table-title', children=[
+                dmc.Title('Step slider')
+            ]),
 
-        html.Div(className='row', children=[
-            html.Div(id='step-control', className='column', children=[
-                create_step_control()
-            ])
+            html.Div(className='row', children=[
+                html.Div(id='step-control', className='column', children=[
+                    create_step_control()
+                ]),
+            ]),
         ]),
 
         html.Div(className='row',
@@ -67,7 +86,11 @@ def create_graph_layout():
             html.Div(id='prices-plot', className='graph-layout', children=[
                 create_prices()
             ]),
-        ])
+        ]),
+        # TODO: remove if not used
+        html.Div(id='empty-output'),
+        dcc.Input(id='report-progress-empty-output'),
+        dcc.Interval(id='interval-progress', interval=1000)
     ]
 
 
