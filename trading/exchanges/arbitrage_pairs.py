@@ -2,7 +2,7 @@ import sys
 
 import ccxt
 
-from common.utils import *
+from trading.common.utils import *
 
 
 def dump(*args):
@@ -18,7 +18,6 @@ def print_usage():
 
 
 def arbitrage_pairs(exchanges_names, symbols=None):
-    dump(exchanges_names)
     dump(yellow(' '.join(exchanges_names)))
 
     exchanges = dict()
@@ -47,22 +46,32 @@ def arbitrage_pairs(exchanges_names, symbols=None):
         [symbol for symbol in uniqueSymbols if allSymbols.count(symbol) > 1 and (symbols is None or symbol in symbols)])
 
     # print a table of arbitrable symbols
-    table = []
+    table = {
+        'symbol': [],
+        **{name: [] for name in exchanges_names}
+    }
     dump(green(' symbol          | ' + ''.join([' {:<15} | '.format(name) for name in exchanges_names])))
     dump(green(''.join(['-----------------+-' for _ in range(0, len(exchanges_names) + 1)])))
 
     for symbol in arbitrableSymbols:
         string = ' {:<15} | '.format(symbol)
         row = {}
+        table['symbol'].append(symbol)
         for name in exchanges_names:
             # if a symbol is present on a exchange print that exchange's id in the row
+            if symbol in exchanges[name].symbols:
+                table[name].append(name)
+            else:
+                table[name].append('')
             string += ' {:<15} | '.format(name if symbol in exchanges[name].symbols else '')
         dump(string)
+    return table
 
 
 def main():
     ids = ['binanceus', 'kraken', 'bybit', 'kucoin', 'bitmex']
-    arbitrage_pairs(ids, symbols=['BTC/USDT', 'LTC/BTC', 'ETH/BTC', 'ETH/USDT', 'LTC/USDT'])
+    table = arbitrage_pairs(ids, symbols=['BTC/USDT', 'LTC/BTC', 'ETH/BTC', 'ETH/USDT', 'LTC/USDT'])
+    print(table)
 
 
 if __name__ == '__main__':

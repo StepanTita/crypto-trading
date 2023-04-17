@@ -102,7 +102,7 @@ def simulate(fn):
         for platform, wallet in portfolio.items():
             for asset, value in wallet.items():
                 total_usdt_after += blockchain.exchanger.exchange(start_timestamp, Asset(asset, platform),
-                                                                   Asset('USDT', platform)) * value
+                                                                  Asset('USDT', platform)) * value
         logger.info(yellow(f'Total USDT after arbitrage: {total_usdt_after}'))
 
         if total_usdt_after - total_usdt_before < 0:

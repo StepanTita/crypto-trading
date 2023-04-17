@@ -1,0 +1,312 @@
+body, html {
+    height: 100% !important;
+    margin: 0;
+    padding: 0;
+    background: #e7ecf7 !important;
+    font-family: 'Lato', sans-serif
+}
+
+header {
+    position: relative;
+    width: 100%;
+    padding: 30px 0 !important;
+    background: white !important;
+    box-shadow: 0 0 5px #bec6cf;
+    font-family: 'Lato', sans-serif
+}
+
+header .nav-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 1000px;
+    max-width: 90%;
+    margin: auto
+}
+
+header .nav-wrapper nav {
+    display: flex
+}
+
+header .nav-wrapper .logo {
+    display: inline-block;
+    width: 40px
+}
+
+header .nav-wrapper a {
+    color: #70829d;
+    font-size: 1em;
+    text-decoration: none;
+    transition: all .3s ease-out
+}
+
+.home-template .container {
+    margin: 0 !important
+}
+
+.home-template .card {
+    width: 800px;
+    max-width: 93%;
+    height: fit-content;
+    margin: 50px auto;
+    padding: 60px;
+    background: white;
+    box-shadow: 0 0 5px rgba(65, 67, 144, 0.15);
+    text-align: center
+}
+
+@media (max-width: 800px) {
+    .home-template .card {
+        max-width: 78%;
+        width: unset;
+        padding: 40px
+    }
+}
+
+.home-template .card .logo {
+    width: 50px;
+    margin: auto
+}
+
+.home-template .card .site-title {
+    margin: 10px 0 3px;
+    color: #5f6988;
+    font-family: proxima-nova, sans-serif;
+    font-size: 2.3em;
+    line-height: 1;
+    text-transform: uppercase
+}
+
+.home-template .card p {
+    margin: 0;
+    color: #7f92af;
+    font-size: 1.08em
+}
+
+.home-template .card a {
+    color: #79aec8;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all .2s ease
+}
+
+.home-template .card .dash-link {
+    display: block;
+    margin-top: 30px;
+    font-size: 1.1em;
+    font-weight: 600
+}
+
+.home-template .card .dash-link:hover {
+    opacity: .7
+}
+
+.home-template .card .dash-link i {
+    margin-left: 6px;
+    font-size: .9em
+}
+
+body, html {
+    height: 100% !important;
+    padding: 0;
+    background: #e7ecf7 !important;
+    font-family: 'Lato', sans-serif;
+    margin: 0
+}
+
+.dash-template h1 {
+    display: inline-block;
+    margin: 0;
+    font-size: 1.5em
+}
+
+.dash-template .logo {
+    width: 40px;
+    margin-right: 20px
+}
+
+.dash-template .logo:hover {
+    opacity: .7
+}
+
+.dash-template .nav-wrapper a {
+    display: flex;
+    align-items: center
+}
+
+#dash-container {
+    width: 1200px;
+    max-width: 95%;
+    margin: 50px auto 0;
+}
+
+.container {
+    margin: 90px 30px;
+    color: #182635
+}
+
+#_dash-app-content {
+    max-width: 95% !important;
+    margin: 90px auto !important;
+    overflow: hidden
+}
+
+nav a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #59657b;
+    line-height: 1;
+    text-decoration: none;
+    transition: all .3s ease-out
+}
+
+nav a:hover {
+    cursor: pointer;
+    opacity: .7
+}
+
+nav a i {
+    margin-right: 5px
+}
+
+.row {
+    display: flex;
+    width: 100%;
+    margin-bottom: 3px;
+}
+
+.column {
+    box-sizing: border-box;
+    float: left;
+}
+
+.graph-layout {
+    margin-bottom: 30px;
+    overflow: hidden;
+    border-radius: 4px;
+    background: white;
+    box-shadow: 0 0 4px #cdd3e2;
+}
+
+#trading-graph {
+    height: 600px;
+}
+
+#trades-plot {
+    margin-left: 15px;
+}
+
+#prices-plot {
+    height: 400px;
+    width: 100%;
+}
+
+#report-table {
+    width: 100%;
+    max-height: 400px;
+    margin-bottom: 15px;
+}
+
+#arbitrage-table {
+    width: 100%;
+    max-height: 400px;
+    margin-bottom: 15px;
+}
+
+#date-range-picker {
+    width: 100%;
+}
+
+#time-range-controls {
+    display: flex;
+    justify-content: space-between;
+}
+
+#controls {
+    margin-bottom: 15px;
+}
+
+#time-start-control {
+    width: 47%;
+}
+
+#time-end-control {
+    width: 47%;
+}
+
+#platforms-select-control {
+    padding-left: 15px;
+    width: 100%;
+}
+
+#assets-select-control {
+    padding-left: 15px;
+    width: 100%;
+}
+
+#min-spread-control {
+    width: 100%;
+}
+
+#max-trade-ratio-control {
+    width: 100%;
+    padding-left: 15px;
+}
+
+#slider-max-trade-ratio-control {
+    width: 100%;
+}
+
+#slider-min-spread-control {
+    width: 100%;
+}
+
+#run-controls {
+    justify-content: center;
+}
+
+#slider-step-control {
+    width: 100%;
+}
+
+#step-control {
+    width: 100%;
+}
+
+.table-title {
+    justify-content: center;
+    color: rgba(40, 46, 49, 0.82) !important;
+    margin: 30px auto 30px auto;
+}
+
+hr {
+    background-color: #59657b;
+}
+
+.control-label {
+    display: inline-block !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: rgb(33, 37, 41) !important;
+    word-break: break-word !important;
+    cursor: default !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji" !important;
+    line-height: 1.55 !important;
+}
+
+header .nav-wrapper {
+    width: 1200px !important
+}
+
+.two-thirds {
+    width: 66%;
+}
+
+.one-third {
+    width: 33%;
+}
+
+.half {
+    width: 50%;
+}
