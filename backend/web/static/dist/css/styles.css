@@ -286,10 +286,6 @@ nav a i {
     padding-left: 15px;
 }
 
-#empty-output, #progress-empty-output {
-    display: none;
-}
-
 #simulation-progress-bar {
     margin-top: 15px;
     width: 100%;
@@ -338,4 +334,8 @@ header .nav-wrapper {
 
 .invisible {
     display: none;
+}
+
+.mantine-Slider-markLabel {
+    transform: rotate(-45deg);
 }

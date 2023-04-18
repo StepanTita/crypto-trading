@@ -1,15 +1,14 @@
 import dash_cytoscape as cyto
-import dash_core_components as dcc
 import dash_mantine_components as dmc
-from dash import html
-
 import plotly.graph_objects as go
+from dash import html, dcc
 
+from .bars import create_trades_predictions, create_trades
 from .controls import create_controls, create_step_control, create_progress_bar
 from .tables import create_arbitrage_table, create_report_table
 
 
-def create_graph_layout(config):
+def create_graph_layout(config, session_id):
     return [
         dmc.LoadingOverlay(
             html.Div(
@@ -48,11 +47,9 @@ def create_graph_layout(config):
                 html.Div(className='row table-title', children=[
                     dmc.Title('Report Table')
                 ]),
-                dmc.LoadingOverlay(
-                    html.Div(
-                        create_report_table(), id='loading-report-table-output'),
-                    loaderProps={'variant': 'bars', 'color': 'blue', 'size': 'xl'},
-                )
+                html.Div(id='report-table-output', children=[
+                    create_report_table()
+                ]),
             ]),
         ]),
 
@@ -92,10 +89,11 @@ def create_graph_layout(config):
                 create_prices()
             ]),
         ]),
-        # TODO: remove if not used
-        html.Div(id='empty-output'),
-        dcc.Input(id='report-table-empty-output'),
-        dcc.Interval(id='interval-progress', interval=1000)
+
+        dcc.Interval(id='interval-progress', interval=1000),
+        dcc.Store(data=session_id, id='session-id', storage_type='session'),
+
+        html.Div(id='empty-output', className='invisible')
     ]
 
 
@@ -128,41 +126,6 @@ def create_network():
             }
         ]
     )
-
-
-def create_trades(data=None):
-    # replace those with empty container or something
-    if data is None:
-        return None
-    return dcc.Graph(figure=go.Figure(data=(
-        go.Bar(x=data['dates'],
-               y=data[''],
-               base=[-500, -600, -700],
-               marker_color='crimson',
-               name='Losses'),
-        go.Bar(x=data['dates'], y=[300, 400, 700],
-               base=0,
-               marker_color='seagreen',
-               name='Gains'
-               )
-    )))
-
-
-def create_trades_predictions(data=None):
-    if data is None:
-        return None
-    return dcc.Graph(figure=go.Figure(data=(
-        go.Bar(x=data['dates'],
-               y=data['predicted'],
-               marker_color='seagreen',
-               name='Predicted'),
-        go.Bar(x=data['dates'],
-               y=data['real'],
-               base=0,
-               marker_color=['crimson' if p < 0 else 'seagreen' for p in data['real']],
-               name='Actual'
-               ),
-    ), layout={'showlegend': False}))
 
 
 def create_prices():

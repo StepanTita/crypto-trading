@@ -1,6 +1,7 @@
 import sys
 
 import ccxt
+import pandas as pd
 
 from trading.common.utils import *
 
@@ -65,7 +66,7 @@ def arbitrage_pairs(exchanges_names, symbols=None):
                 table[name].append('')
             string += ' {:<15} | '.format(name if symbol in exchanges[name].symbols else '')
         dump(string)
-    return table
+    return pd.DataFrame(table)
 
 
 def main():

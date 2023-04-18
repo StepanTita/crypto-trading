@@ -12,7 +12,7 @@ def create_controls(config, initial_state=dict()):
             html.Div(className='row', children=[
                 html.Div(className='full', children=[
                     dmc.Select(id='select-strategy-select-control', label='Select strategy',
-                               value=initial_state.get('strategy', 'bellman-ford'),
+                               value=initial_state.get('strategy_name', 'bellman-ford'),
                                data=config.get('STRATEGIES'))
                 ])
             ]),
@@ -140,8 +140,8 @@ def create_controls(config, initial_state=dict()):
 
             html.Div(id='run-controls', className='row', children=[
                 dmc.Group(children=[
-                    dmc.Button('Run!', id='run-button-control', variant="gradient"),
-                    dmc.Button('View Arbitrages', id='view-arbitrage-button-control', variant="gradient"),
+                    dmc.Button('Run!', id='run-button-control', variant='gradient'),
+                    dmc.Button('View Arbitrages', id='view-arbitrage-button-control', variant='gradient'),
                     dmc.Checkbox(id='use-fees-checkbox-control', label='Enable fees estimation?', checked=False)
                 ]),
             ])
@@ -159,7 +159,8 @@ def create_step_control(data=None, disabled=True):
         max=len(data['dates']),
         value=0,
         marks=[
-            {'value': i, 'label': val} for i, val in enumerate(data['dates'][::5])
+            {'value': i, 'label': val.strftime('%Y-%m-%d %H:%M')} for i, val in
+            enumerate(reversed(data['dates']))
         ],
         mb=35,
         disabled=disabled,
