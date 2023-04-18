@@ -22,15 +22,10 @@ def create_trades(data=None, granularity=HOUR):
     if data is None:
         return None
 
-    grouping = data['dates'].dt.date
-    if granularity == HOUR:
-        grouping = data['dates'].dt.hour
-    elif granularity == MINUTE:
-        grouping = data['dates'].dt.minute
-    elif granularity == WEEK:
-        grouping = pd.Grouper(key='dates', freq='W-MON')
+    data['dates'] = data['dates'].apply(
+        lambda x: (x.value - data['dates'].min().value)) // 10 ** 9 // granularity
 
-    grouped_data = data.groupby([grouping])['real'].sum()
+    grouped_data = data.groupby(by=['dates'])['real'].sum()
 
     profitable_data = grouped_data[grouped_data > 0]
     losses_data = grouped_data[grouped_data < 0]
@@ -45,7 +40,7 @@ def create_trades(data=None, granularity=HOUR):
                marker_color='seagreen',
                name='Gains'
                )
-    ))) # layout={'xaxis': dict(tickformatstops=tickformat)}
+    )))
 
 
 def create_trades_predictions(data=None):

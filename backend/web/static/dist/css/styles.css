@@ -336,6 +336,6 @@ header .nav-wrapper {
     display: none;
 }
 
-.mantine-Slider-markLabel {
-    transform: rotate(-45deg);
+#step-control .mantine-Slider-markLabel {
+    font-size: 8px;
 }

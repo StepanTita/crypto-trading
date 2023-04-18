@@ -150,6 +150,7 @@ def create_controls(config, initial_state=dict()):
     )
 
 
+# TODO: fix labels
 def create_step_control(data=None, disabled=True):
     if data is None:
         return None
@@ -159,8 +160,8 @@ def create_step_control(data=None, disabled=True):
         max=len(data['dates']),
         value=0,
         marks=[
-            {'value': i, 'label': val.strftime('%Y-%m-%d %H:%M')} for i, val in
-            enumerate(reversed(data['dates']))
+            {'value': i * 5, 'label': val.strftime('%Y-%m-%d %H:%M')} for i, val in
+            enumerate(reversed(list(data['dates'].iloc[::5])))
         ],
         mb=35,
         disabled=disabled,
