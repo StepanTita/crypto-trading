@@ -182,16 +182,20 @@ nav a i {
 }
 
 #trading-graph {
-    height: 600px;
+    height: 900px;
 }
 
-#trades-plot {
+#bar-plots {
     margin-left: 15px;
 }
 
 #prices-plot {
     height: 400px;
     width: 100%;
+}
+
+#trades-predicted-plot, #trades-plot {
+    height: 50%;
 }
 
 #report-table {
@@ -330,4 +334,8 @@ header .nav-wrapper {
 
 .half {
     width: 50%;
+}
+
+.invisible {
+    display: none;
 }

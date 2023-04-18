@@ -11,7 +11,7 @@ def generate(fn):
     def wrapper(*args, **kwargs):
         res = None
         for r in fn(*args, **kwargs):
-            _, res = r # ignore timestamp for demo purposes we don't need it
+            _, res = r  # ignore timestamp for demo purposes we don't need it
         return res
 
     return wrapper

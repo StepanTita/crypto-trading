@@ -9,7 +9,6 @@ from .controls import create_controls, create_step_control, create_progress_bar
 from .tables import create_arbitrage_table, create_report_table
 
 
-# TODO: add arbitrable pairs table
 def create_graph_layout(config):
     return [
         dmc.LoadingOverlay(
@@ -31,7 +30,7 @@ def create_graph_layout(config):
         ]),
 
         html.Div(className='row', children=[
-            html.Div(id='arbitrage-table', children=[
+            html.Div(id='arbitrage-table', className='invisible', children=[
                 dmc.Divider(),
                 html.Div(className='row table-title', children=[
                     dmc.Title('Arbitrage Table')
@@ -44,7 +43,7 @@ def create_graph_layout(config):
             ]),
         ]),
         html.Div(className='row', children=[
-            html.Div(id='report-table', children=[
+            html.Div(id='report-table', className='invisible', children=[
                 dmc.Divider(),
                 html.Div(className='row table-title', children=[
                     dmc.Title('Report Table')
@@ -78,9 +77,15 @@ def create_graph_layout(config):
                               children=[
                                   create_network()
                               ]),
-                     html.Div(id='trades-plot', className='graph-layout one-third column', children=[
-                         create_trades()
-                     ]),
+                     html.Div(id='bar-plots', className='graph-layout one-third column', children=[
+                         html.Div(id='trades-predicted-plot', children=[
+                             create_trades_predictions()
+                         ]),
+                         # TODO: make some space between bar plots
+                         html.Div(id='trades-plot', children=[
+                             create_trades()
+                         ]),
+                     ])
                  ]),
         html.Div(className='row', children=[
             html.Div(id='prices-plot', className='graph-layout', children=[
@@ -89,7 +94,7 @@ def create_graph_layout(config):
         ]),
         # TODO: remove if not used
         html.Div(id='empty-output'),
-        dcc.Input(id='report-progress-empty-output'),
+        dcc.Input(id='report-table-empty-output'),
         dcc.Interval(id='interval-progress', interval=1000)
     ]
 
@@ -125,19 +130,39 @@ def create_network():
     )
 
 
-def create_trades():
+def create_trades(data=None):
+    # replace those with empty container or something
+    if data is None:
+        return None
     return dcc.Graph(figure=go.Figure(data=(
-        go.Bar(x=['2016', '2017', '2018'],
-               y=[500, 600, 700],
+        go.Bar(x=data['dates'],
+               y=data[''],
                base=[-500, -600, -700],
                marker_color='crimson',
-               name='expenses'),
-        go.Bar(x=['2016', '2017', '2018'], y=[300, 400, 700],
+               name='Losses'),
+        go.Bar(x=data['dates'], y=[300, 400, 700],
                base=0,
                marker_color='seagreen',
-               name='revenue'
+               name='Gains'
                )
     )))
+
+
+def create_trades_predictions(data=None):
+    if data is None:
+        return None
+    return dcc.Graph(figure=go.Figure(data=(
+        go.Bar(x=data['dates'],
+               y=data['predicted'],
+               marker_color='seagreen',
+               name='Predicted'),
+        go.Bar(x=data['dates'],
+               y=data['real'],
+               base=0,
+               marker_color=['crimson' if p < 0 else 'seagreen' for p in data['real']],
+               name='Actual'
+               ),
+    ), layout={'showlegend': False}))
 
 
 def create_prices():

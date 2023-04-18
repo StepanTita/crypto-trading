@@ -2,15 +2,17 @@ import dash_mantine_components as dmc
 from dash import html
 from datetime import date, datetime
 
+from trading.common.constants import *
 
-def create_controls(config):
+
+def create_controls(config, initial_state=dict()):
     return dmc.LoadingOverlay(html.Div(
         id='controls',
         children=[
             html.Div(className='row', children=[
                 html.Div(className='full', children=[
                     dmc.Select(id='select-strategy-select-control', label='Select strategy',
-                               value='bellman-ford',
+                               value=initial_state.get('strategy', 'bellman-ford'),
                                data=config.get('STRATEGIES'))
                 ])
             ]),
@@ -18,7 +20,7 @@ def create_controls(config):
                 html.Div(className='half column', children=[
                     html.Div(id='select-primary-granularity-control', children=[
                         dmc.Select(id='select-primary-granularity-select-control', label='Select primary granularity',
-                                   value=60,
+                                   value=initial_state.get('primary_granularity', MINUTE),
                                    data=config.get('GRANULARITIES'))
                     ])
                 ]),
@@ -26,7 +28,7 @@ def create_controls(config):
                     html.Div(id='select-secondary-granularity-control', children=[
                         dmc.Select(id='select-secondary-granularity-select-control',
                                    label='Select secondary granularity',
-                                   value=60,
+                                   value=initial_state.get('secondary_granularity', HOUR),
                                    data=config.get('GRANULARITIES'))
                     ])
                 ])
@@ -39,6 +41,7 @@ def create_controls(config):
                         label='Date Range',
                         minDate=date(2021, 1, 1),
                         maxDate=datetime.now().date(),
+                        value=initial_state.get('date_range', [])
                     ),
                 ]),
                 html.Div(className='half column', children=[
@@ -47,7 +50,7 @@ def create_controls(config):
                             dmc.MultiSelect(
                                 id='multiselect-platforms-select-control',
                                 label='Select platforms',
-                                value=['binanceus', 'bybit'],
+                                value=initial_state.get('platforms', ['binanceus', 'bybit']),
                                 data=config.get('PLATFORMS'),
                             ),
                         ]),
@@ -62,7 +65,7 @@ def create_controls(config):
                             id='start-timestamp-timeinput-control',
                             label='Start time:',
                             withSeconds=True,
-                            value=datetime(2020, 1, 1, 0, 0, 0),
+                            value=initial_state.get('start_time', datetime(2020, 1, 1, 0, 0, 0)),
                         ),
                     ]),
                     html.Div(id='time-end-control', className='half column', children=[
@@ -70,7 +73,7 @@ def create_controls(config):
                             id='end-timestamp-timeinput-control',
                             label='End time:',
                             withSeconds=True,
-                            value=datetime(2020, 1, 1, 0, 0, 0),
+                            value=initial_state.get('end_time', datetime(2020, 1, 1, 0, 0, 0)),
                         ),
                     ]),
                 ]),
@@ -80,7 +83,7 @@ def create_controls(config):
                             dmc.MultiSelect(
                                 id='multiselect-assets-select-control',
                                 label='Select symbols',
-                                value=['BTC', 'USDT', 'ETH', 'LTC'],
+                                value=initial_state.get('assets', ['BTC', 'USDT', 'ETH', 'LTC']),
                                 data=config.get('ASSETS'),
                             ),
                         ]),
@@ -101,7 +104,7 @@ def create_controls(config):
                                     min=0,
                                     max=10,
                                     step=0.1,
-                                    value=0.5,
+                                    value=initial_state.get('min_spread', 0.5),
                                     marks=[
                                         {'value': 2.5, 'label': '2.5%'},
                                         {'value': 5, 'label': '5%'},
@@ -122,7 +125,7 @@ def create_controls(config):
                         html.Div(className='row', children=[
                             dmc.Slider(
                                 id='slider-max-trade-ratio-control',
-                                value=26,
+                                value=initial_state.get('max_trade_ratio', 50),
                                 marks=[
                                     {'value': 20, 'label': '20%'},
                                     {'value': 50, 'label': '50%'},
@@ -147,20 +150,24 @@ def create_controls(config):
     )
 
 
-def create_step_control():
+def create_step_control(data=None, disabled=True):
+    if data is None:
+        return None
     return dmc.Slider(
         id='slider-step-control',
-        value=26,
+        min=0,
+        max=len(data['dates']),
+        value=0,
         marks=[
-            {'value': 20, 'label': '20%'},
-            {'value': 50, 'label': '50%'},
-            {'value': 80, 'label': '80%'},
+            {'value': i, 'label': val} for i, val in enumerate(data['dates'][::5])
         ],
         mb=35,
+        disabled=disabled,
     )
 
 
 def create_progress_bar(value):
+    value = round(value, 2)
     return dmc.Progress(
         id='simulation-progress-bar-control',
         animate=True,
