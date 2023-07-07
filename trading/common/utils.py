@@ -1,3 +1,6 @@
+from collections import namedtuple
+
+
 def style(s, style):
     return style + s + '\033[0m'
 
@@ -61,3 +64,6 @@ def get_blockchain(asset):
         'RUB': 'binance_smart_chain',
         'UAH': 'binance_smart_chain',
     }[asset.symbol]
+
+
+TradeNetwork = namedtuple('TradeNetwork', 'edges_list assets_mapping')

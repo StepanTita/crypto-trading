@@ -1,2 +1,4 @@
 /.ipynb_checkpoints/
 /data/
+/backend/cache/
+config.*.yaml

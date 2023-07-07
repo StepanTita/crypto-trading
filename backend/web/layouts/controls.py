@@ -142,7 +142,7 @@ def create_controls(config, initial_state=dict()):
                 dmc.Group(children=[
                     dmc.Button('Run!', id='run-button-control', variant='gradient'),
                     dmc.Button('View Arbitrages', id='view-arbitrage-button-control', variant='gradient'),
-                    dmc.Checkbox(id='use-fees-checkbox-control', label='Enable fees estimation?', checked=False)
+                    dmc.Checkbox(id='use-fees-checkbox-control', label='Enable fees estimation? (experimental)', checked=False)
                 ]),
             ])
         ]

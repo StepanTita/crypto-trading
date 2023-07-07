@@ -97,16 +97,19 @@ def create_graph_layout(config, session_id):
     ]
 
 
-def create_network():
+def create_network(data=None):
+    if data is None:
+        return None
     return cyto.Cytoscape(
         id='cytoscape',
         elements=[
-            {'data': {'id': 'BTC', 'label': 'BTC'}},
-            {'data': {'id': 'ETH', 'label': 'ETH'}},
-            {'data': {'id': 'USDT', 'label': 'USDT'}},
-            {'data': {'source': 'BTC', 'target': 'ETH', 'weight': 1}},
-            {'data': {'source': 'ETH', 'target': 'USDT', 'weight': 2}},
-            {'data': {'source': 'USDT', 'target': 'BTC', 'weight': 3}},
+            *[{'data': {'id': f'{asset.symbol}_{asset.platform}', 'label': f'{asset.symbol} ({asset.platform})'}}
+              for asset in data.assets_mapping],
+            # TODO: rework with edges and use edge type here
+            *[{'data': {'id': f'{edge[0].symbol}_{edge[0].platform}-{edge[1].symbol}_{edge[1].platform}',
+                        'source': f'{edge[0].symbol}_{edge[0].platform}',
+                        'target': f'{edge[1].symbol}_{edge[1].platform}', 'weight': round(edge[2], 2)}} for edge in
+              data.edges_list],
         ],
         layout={'name': 'circle'},
         style={'width': '100%', 'height': '100%'},
@@ -118,12 +121,35 @@ def create_network():
                 }
             },
             {
-                'selector': '[weight <= 1]',
+                'selector': '[weight < 0]',
                 'style': {
-                    'line-color': 'red',
+                    'line-color': 'crimson',
                     'width': 5,
                 }
-            }
+            },
+            {
+                'selector': '[weight > 0]',
+                'style': {
+                    'line-color': 'lightgreen',
+                    'width': 5,
+                }
+            },
+            {
+                'selector': 'node',
+                'style': {
+                    'content': 'data(label)',
+                    'text-halign': 'center',
+                    'text-valign': 'center',
+                    # 'width': 'label',
+                    # 'height': 'label',
+                }
+            },
+            *[{
+                'selector': f'#{edge[0].symbol}_{edge[0].platform}-{edge[1].symbol}_{edge[1].platform}',
+                'style': {
+                    'curve-style': 'bezier',
+                }
+            } for edge in data.edges_list]
         ]
     )
 

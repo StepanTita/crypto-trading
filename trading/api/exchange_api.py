@@ -1,15 +1,27 @@
 import datetime
+from typing import List
 
 import ccxt
 import numpy as np
 
 from trading.api.utils import cached_exchanges, cached_fees, log_continue
 from trading.blockchain.asset import Asset
+from trading.common.constants import MINUTE, HOUR, DAY
 from trading.retrier.retry import retry_with_exponential_backoff, ccxt_errors
 
 
+def timespan_to_period(timespan: int) -> str:
+    if timespan == MINUTE:
+        return '1m'
+    elif timespan == HOUR:
+        return '1h'
+    elif timespan == DAY:
+        return '1d'
+    return '1m'
+
+
 class ExchangesAPI:
-    def __init__(self, exchanges_names):
+    def __init__(self, exchanges_names: List[str]):
         self.exchanges = dict()
         for name in exchanges_names:
             # instantiate the exchange by id
@@ -24,16 +36,26 @@ class ExchangesAPI:
     @log_continue
     @cached_exchanges
     @retry_with_exponential_backoff(ccxt_errors)
-    def exchange(self, timestamp, base_asset, quote_asset):
+    def exchange(self, timestamp: int, base_asset: Asset, quote_asset: Asset, timespan: int = 60):
+        """
+        :param timestamp: integer timestamp in seconds to retrieve the rate for
+        :param base_asset:
+        :param quote_asset:
+        :param timespan: time period to watch for OHLCV in seconds
+        :return:
+        np.flaot exchange rate or np.inf if not found
+        """
         pair = f'{base_asset.symbol}/{quote_asset.symbol}'
         if pair in self.exchanges[base_asset.platform].symbols:
-            ohlcv = self.exchanges[base_asset.platform].fetch_ohlcv(pair, '1m', since=int(timestamp * 1000), limit=1)
+            ohlcv = self.exchanges[base_asset.platform].fetch_ohlcv(pair, timespan_to_period(timespan),
+                                                                    since=int(timestamp * 1000), limit=1)
             return ohlcv[0][1]
         else:
             pair = f'{quote_asset.symbol}/{base_asset.symbol}'
 
         if pair in self.exchanges[base_asset.platform].symbols:
-            ohlcv = self.exchanges[base_asset.platform].fetch_ohlcv(pair, '1m', since=int(timestamp * 1000), limit=1)
+            ohlcv = self.exchanges[base_asset.platform].fetch_ohlcv(pair, timespan_to_period(timespan),
+                                                                    since=int(timestamp * 1000), limit=1)
             return 1.0 / ohlcv[0][1]
 
         return np.inf
@@ -41,7 +63,7 @@ class ExchangesAPI:
     @log_continue
     @cached_fees
     @retry_with_exponential_backoff(ccxt_errors)
-    def trading_fees(self, base_asset, quote_asset, amount, price):
+    def trading_fees(self, base_asset: Asset, quote_asset: Asset, amount: float, price: float):
         if base_asset.symbol == quote_asset.symbol:
             return 0
         pair = f'{base_asset.symbol}/{quote_asset.symbol}'

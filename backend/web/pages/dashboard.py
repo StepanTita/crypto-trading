@@ -14,7 +14,7 @@ from .layout import html_layout
 
 from dash_extensions.enrich import FileSystemStore, Trigger
 
-from backend.web.layouts.graphs_layout import create_graph_layout, create_trades_predictions
+from backend.web.layouts.graphs_layout import create_graph_layout, create_trades_predictions, create_network
 from backend.web.layouts.tables import create_arbitrage_table, create_report_table
 from backend.utils import to_asset_pairs, to_controls_state_dict
 from backend.web.layouts.controls import create_controls, create_step_control, create_progress_bar
@@ -81,7 +81,8 @@ def init_callbacks(app, config):
             Output('loading-controls', 'children', allow_duplicate=True),
             Output('step-control', 'children'),
             Output('trades-predicted-plot', 'children'),
-            Output('trades-plot', 'children')
+            Output('trades-plot', 'children'),
+            Output('trading-graph', 'children')
         ],
         [
             Input('run-button-control', 'n_clicks'),
@@ -137,27 +138,32 @@ def init_callbacks(app, config):
         end_timestamp = int(datetime.datetime.timestamp(end_date))
 
         data = None
-        for t, r in name_to_strategy(strategy_name)(blockchain, start_timestamp=start_timestamp,
-                                                    end_timestamp=end_timestamp,
-                                                    step=primary_granularity, primary_granularity=primary_granularity,
-                                                    secondary_granularity=secondary_granularity,
-                                                    portfolio={
-                                                        'binanceus': {
-                                                            'USDT': 1000,
-                                                        },
-                                                        'bybit': {
-                                                            'USDT': 1000,
-                                                        },
-                                                    }, platforms=platforms, symbols=assets,
-                                                    max_trade_ratio=max_trade_ratio / 100, min_spread=min_spread / 100):
+        graphs_history = None
+        for t, r, g in name_to_strategy(strategy_name)(blockchain, start_timestamp=start_timestamp,
+                                                       end_timestamp=end_timestamp,
+                                                       step=primary_granularity,
+                                                       primary_granularity=primary_granularity,
+                                                       secondary_granularity=secondary_granularity,
+                                                       portfolio={
+                                                           'binanceus': {
+                                                               'USDT': 1000,
+                                                           },
+                                                           'bybit': {
+                                                               'USDT': 1000,
+                                                           },
+                                                       }, platforms=platforms, symbols=assets,
+                                                       max_trade_ratio=max_trade_ratio / 100,
+                                                       min_spread=min_spread / 100):
             data = pd.DataFrame(r)
+            graphs_history = g
             fsc.set('report_table', data)
             fsc.set('run_progress', (t - start_timestamp) / (end_timestamp - start_timestamp) * 100)
 
         return create_controls(config, controls_state), \
             create_step_control(data, disabled=False), \
             create_trades_predictions(data), \
-            create_trades(data, secondary_granularity)
+            create_trades(data, secondary_granularity), \
+            create_network(graphs_history[-1])
 
     @app.callback([
         Output('report-table-output', 'children'),

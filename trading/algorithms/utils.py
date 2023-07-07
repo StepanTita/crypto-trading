@@ -29,3 +29,13 @@ def nodes_to_assets(nodes: List[int], assets: List[Asset]) -> List[Asset]:
     for node in nodes:
         result.append(assets[node])
     return result
+
+
+# TODO URGENT: rework algo to edge list everywhere
+def adj_list_to_edges_list(adj_list: List[List[Tuple[int, float]]], assets: List[Asset]) -> List[
+    Tuple[Asset, Asset, float]]:
+    edges_list = []
+    for node_from in range(len(adj_list)):
+        for node_to, weight in adj_list[node_from]:
+            edges_list.append((assets[node_from], assets[node_to], weight))
+    return edges_list

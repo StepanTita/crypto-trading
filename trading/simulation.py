@@ -1,17 +1,17 @@
-import datetime
 import copy
+import datetime
 
-from .blockchain.asset import Asset
 from trading.common.blockchain_logger import logger
-from trading.common.utils import *
 from trading.common.constants import *
+from trading.common.utils import *
+from .blockchain.asset import Asset
 
 
 def generate(fn):
     def wrapper(*args, **kwargs):
         res = None
-        for r in fn(*args, **kwargs):
-            _, res = r  # ignore timestamp for demo purposes we don't need it
+        for _, r, _ in fn(*args, **kwargs):
+            res = r  # ignore timestamp for demo purposes we don't need it
         return res
 
     return wrapper
@@ -36,6 +36,7 @@ def simulate(fn):
                 'dates': [],
             },
         }
+        graphs_history = []
 
         total_usdt_before = 0
         for platform, wallet in portfolio.items():
@@ -55,7 +56,8 @@ def simulate(fn):
             while timestamp < end_timestamp:
                 logger.debug(yellow(f'Timestamp: {datetime.datetime.fromtimestamp(timestamp)}'))
 
-                next_timestamp, max_benefit, real_benefit, coins = fn(blockchain, timestamp, portfolio, *args, **kwargs)
+                next_timestamp, max_benefit, real_benefit, coins, trade_network = fn(blockchain, timestamp, portfolio,
+                                                                                     *args, **kwargs)
                 if next_timestamp == timestamp:  # if we didn't really trade, then just go to the next period
                     next_timestamp = timestamp + step
 
@@ -73,6 +75,7 @@ def simulate(fn):
                             report[f'{platform}_{asset}'].append(value)
                             report[f'{platform}_{asset}_change'].append(
                                 value - secondary_granularity_data[platform].get(asset, 0))
+                    graphs_history.append(trade_network)
 
                 if (timestamp - last_primary_timestamp) // primary_granularity >= 1:
                     logger.info(blue(underline(
@@ -110,7 +113,7 @@ def simulate(fn):
 
                 timestamp = next_timestamp
 
-                yield timestamp, report
+                yield timestamp, report, graphs_history
 
         yield from simulate_iteration()
 
@@ -128,6 +131,6 @@ def simulate(fn):
         else:
             logger.info(green(f'Profit: {total_usdt_after - total_usdt_before}'))
 
-        return end_timestamp, report
+        return end_timestamp, report, graphs_history
 
     return wrapper

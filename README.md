@@ -9,6 +9,6 @@ Kraken historical data: https://drive.google.com/drive/folders/1jI3mZvrPbInNAEaI
 
 # TODO: refactor CSS
 
-# TODO: remove loading overlay where unnecessary
-
 # TODO: clear cache sometimes
+
+# # TODO URGENT: rework algo to edge list everywhere

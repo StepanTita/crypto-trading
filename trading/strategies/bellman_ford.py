@@ -9,7 +9,7 @@ from trading.blockchain.runner import Runner
 from trading.simulation import simulate
 
 from trading.algorithms.bellman_ford import find_negative_cycle
-from trading.algorithms.utils import assets_to_adj_list, nodes_to_assets
+from trading.algorithms.utils import assets_to_adj_list, nodes_to_assets, adj_list_to_edges_list
 
 
 @simulate
@@ -76,4 +76,4 @@ def strategy_bellman_ford_generator(blockchain, timestamp, portfolio, platforms,
         portfolio[best_cycle[-1].platform][best_start.symbol] = portfolio[best_cycle[-1].platform].get(
             best_start.symbol,
             0) + best_trade
-    return timestamp, max_benefit, real_benefit, best_cycle
+    return timestamp, max_benefit, real_benefit, best_cycle, TradeNetwork(adj_list_to_edges_list(adj_list, assets), assets)
