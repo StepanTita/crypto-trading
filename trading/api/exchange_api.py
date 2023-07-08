@@ -4,6 +4,8 @@ from typing import List
 import ccxt
 import numpy as np
 
+from pymongo.database import Database
+
 from trading.api.utils import cached_exchanges, cached_fees, log_continue
 from trading.blockchain.asset import Asset
 from trading.common.constants import MINUTE, HOUR, DAY
@@ -21,7 +23,8 @@ def timespan_to_period(timespan: int) -> str:
 
 
 class ExchangesAPI:
-    def __init__(self, exchanges_names: List[str]):
+    def __init__(self, db: Database = None, exchanges_names: List[str] = None):
+        self.db = db
         self.exchanges = dict()
         for name in exchanges_names:
             # instantiate the exchange by id
@@ -43,8 +46,15 @@ class ExchangesAPI:
         :param quote_asset:
         :param timespan: time period to watch for OHLCV in seconds
         :return:
-        np.flaot exchange rate or np.inf if not found
+        np.float exchange rate or np.inf if not found
         """
+
+        if self.db:
+            price = self.db[f'exchange_price_{base_asset.platform}'].find_one(
+                {'base_asset': base_asset.symbol, 'quote_asset': quote_asset.symbol, 'timestamp': timestamp})
+            if price is not None:
+                return price
+
         pair = f'{base_asset.symbol}/{quote_asset.symbol}'
         if pair in self.exchanges[base_asset.platform].symbols:
             ohlcv = self.exchanges[base_asset.platform].fetch_ohlcv(pair, timespan_to_period(timespan),
@@ -77,7 +87,7 @@ class ExchangesAPI:
 
 
 if __name__ == '__main__':
-    ex = ExchangesAPI(['binanceus', 'kraken'])
+    ex = ExchangesAPI(exchanges_names=['binanceus', 'kraken'])
 
     date = datetime.datetime.strptime('2022-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
     timestamp = int(datetime.datetime.timestamp(date))

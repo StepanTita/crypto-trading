@@ -1,3 +1,5 @@
+from datetime import date
+
 class Config:
     """Set Flask config variables."""
 
@@ -33,3 +35,8 @@ class Config:
         {'value': 24 * 3600, 'label': 'Day'},
         {'value': 7 * 24 * 3600, 'label': 'Week'}
     ]
+
+    DATE_RANGE = {
+        'min_date': date(2023, 1, 1),
+        'max_date': date(2023, 3, 1)
+    }

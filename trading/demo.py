@@ -96,7 +96,7 @@ def main():
     prices_api = None
     if not use_data:
         arbitrage_pairs(platforms, symbols=['BTC/USDT', 'LTC/BTC', 'ETH/BTC', 'ETH/USDT', 'LTC/USDT'])
-        prices_api = ExchangesAPI(platforms)
+        prices_api = ExchangesAPI(exchanges_names=platforms)
 
     blockchain = Blockchain(prices_api=prices_api, fees_data=AVG_FEES, prices_data=prices_data)
 

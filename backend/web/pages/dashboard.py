@@ -112,7 +112,7 @@ def init_callbacks(app, config):
         fsc = FileSystemStore(f'./cache/{session_id}')
         reset_cache(fsc)
 
-        prices_api = ExchangesAPI(platforms)
+        prices_api = ExchangesAPI(exchanges_names=platforms)
         # TODO: real fees and prices data
         blockchain = Blockchain(prices_api=prices_api, fees_data=None, prices_data=None,
                                 disable_fees=not use_fees)

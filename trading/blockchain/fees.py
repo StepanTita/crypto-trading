@@ -42,7 +42,7 @@ class Fees:
 def main():
     from trading.api.exchange_api import ExchangesAPI
     # binanceus, bybit, huobi, gemini
-    api = ExchangesAPI(['gemini'])
+    api = ExchangesAPI(exchanges_names=['gemini'])
 
     from trading.common.constants import AVG_FEES
     fees = Fees(fees_data=AVG_FEES, fees_api=api)

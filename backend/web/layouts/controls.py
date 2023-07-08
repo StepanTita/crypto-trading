@@ -39,8 +39,8 @@ def create_controls(config, initial_state=dict()):
                     dmc.DateRangePicker(
                         id='date-range-picker-control',
                         label='Date Range',
-                        minDate=date(2021, 1, 1),
-                        maxDate=datetime.now().date(),
+                        minDate=config.get('DATE_RANGE', {'min_date': date(2021, 1, 1)})['min_date'],
+                        maxDate=min(config.get('DATE_RANGE', {'max_date': date(2021, 1, 1)})['max_date'], datetime.now().date()),
                         value=initial_state.get('date_range', [])
                     ),
                 ]),

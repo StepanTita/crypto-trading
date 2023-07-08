@@ -47,7 +47,7 @@ class Blockchain:
 def main():
     from trading.api.exchange_api import ExchangesAPI
     # binanceus, bybit, huobi
-    api = ExchangesAPI(['bybit', 'binanceus'])
+    api = ExchangesAPI(exchanges_names=['bybit', 'binanceus'])
     blockchain = Blockchain(prices_api=api, fees_data=AVG_FEES)
 
     date = datetime.datetime.strptime('2022-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')

@@ -34,7 +34,7 @@ class Exchanger:
 def main():
     from trading.api.exchange_api import ExchangesAPI
     # binanceus, bybit, huobi
-    api = ExchangesAPI(['binanceus', 'bybit'])
+    api = ExchangesAPI(exchanges_names=['binanceus', 'bybit'])
     ex = Exchanger(api=api)
 
     date = datetime.datetime.strptime('2022-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')

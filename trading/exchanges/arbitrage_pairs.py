@@ -70,7 +70,7 @@ def arbitrage_pairs(exchanges_names, symbols=None):
 
 
 def main():
-    ids = ['binanceus', 'kraken', 'bybit', 'kucoin', 'bitmex']
+    ids = ['binanceus', 'kraken', 'bybit', 'kucoin', 'bitmex', 'huobi', 'okx']
     table = arbitrage_pairs(ids, symbols=['BTC/USDT', 'LTC/BTC', 'ETH/BTC', 'ETH/USDT', 'LTC/USDT'])
     print(table)
 

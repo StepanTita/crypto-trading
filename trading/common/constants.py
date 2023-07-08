@@ -25,6 +25,8 @@ AVG_FEES = {
             'binance-fee': 0.001,
             'coinbase-fee': 0.006,
             'huoby-fee': 0.002,
+            'bybit-fee': 0.001,
+            'okx-fee': 0.001,
         }
     },
     'absolute': {
@@ -70,6 +72,13 @@ AVG_FEES = {
             'kraken-bitcoin-fee': 0.00001,
             'kraken-litecoin-fee': 0.002,
             'kraken-tron-fee': 1,
+
+            # okx
+            'okx-ethereum-fee': 0.079617,
+            'okx-bitcoin-fee': 0.0005,
+            'okx-litecoin-fee': 0.176979,
+            'okx-tron-fee': 15.348063,
+
         },
         'deposit': {}
 

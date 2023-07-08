@@ -52,13 +52,13 @@ def main():
 
     client = MongoClient(cfg['database']['host'], cfg['database']['port'])
 
-    start_date = datetime.datetime.strptime('2022-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+    start_date = datetime.datetime.strptime('2023-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
     start_timestamp = int(datetime.datetime.timestamp(start_date))
 
-    end_date = datetime.datetime.strptime('2022-01-02 00:00:00', '%Y-%m-%d %H:%M:%S')
+    end_date = datetime.datetime.strptime('2023-04-01 00:00:00', '%Y-%m-%d %H:%M:%S')
     end_timestamp = int(datetime.datetime.timestamp(end_date))
 
-    ex = ExchangesAPI(cfg['platforms'])
+    ex = ExchangesAPI(exchanges_names=cfg['platforms'])
 
     db = client['crypto_exchanges']
 
