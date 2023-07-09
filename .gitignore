@@ -3,3 +3,5 @@
 /data/
 /backend/cache/
 config.*.yaml
+__pycache__
+.DS_Store
