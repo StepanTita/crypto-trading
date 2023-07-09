@@ -29,8 +29,8 @@ class Config:
     ]
 
     STRATEGIES = [
-        {'value': 'simple-single-platform', 'label': 'Simple Single Platform'},
-        {'value': 'simple-multiple-platforms', 'label': 'Simple Multiple Platforms'},
+        {'value': 'simple-single-platform', 'label': 'Simple Single Platform (deprecated)'},
+        {'value': 'simple-multiple-platforms', 'label': 'Simple Multiple Platforms (deprecated)'},
         {'value': 'bellman-ford', 'label': 'Bellman-Ford'},
     ]
 

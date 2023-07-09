@@ -152,7 +152,7 @@ def init_callbacks(app, config):
 
         report_data = None
         prices_data = None
-        graphs_history = None
+        graphs_history = []
         for run_res in name_to_strategy(strategy_name)(blockchain=blockchain,
                                                        start_timestamp=start_timestamp,
                                                        end_timestamp=end_timestamp,
@@ -166,7 +166,7 @@ def init_callbacks(app, config):
                                                        min_spread=min_spread / 100):
             report_data = pd.DataFrame(run_res['report'])
             prices_data = run_res['prices']
-            graphs_history = run_res['graph']
+            graphs_history.append(run_res['graph'])
             fsc.set('report_table', report_data)
             fsc.set('prices', prices_data)
             fsc.set('run_progress',
