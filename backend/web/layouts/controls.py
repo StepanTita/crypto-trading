@@ -172,22 +172,33 @@ def create_controls(config, initial_state=None):
     )
 
 
-# TODO: fix labels
 def create_step_control(data: pd.DataFrame = None, disabled: bool = True):
     if data is None:
-        return None
-    return dmc.Slider(
-        id='slider-step-control',
-        min=0,
-        max=len(data['dates']),
-        value=0,
-        marks=[
-            {'value': i * 5, 'label': val.strftime('%Y-%m-%d %H:%M')} for i, val in
-            enumerate(reversed(list(data['dates'].iloc[::5])))
-        ],
-        mb=35,
-        disabled=disabled,
-    )
+        return dmc.Slider(
+            id='slider-step-control',
+            className='invisible',
+            min=0,
+            max=0,
+            value=0
+        )
+
+    dates = list(data['dates'])
+    step = max(1, (len(dates) - 2) // 8)
+    if len(dates) > 1:
+        return dmc.Slider(
+            id='slider-step-control',
+            min=0,
+            max=len(dates) - 1,
+            value=len(dates) - 1,
+            marks=[{'value': 0, 'label': dates[-1].strftime('%Y-%m-%d %H:%M')}] + [
+                {'value': i * step, 'label': val.strftime('%Y-%m-%d %H:%M')} for i, val in
+                enumerate(reversed(list(dates[1:-1:step])))
+            ] + [{'value': len(dates) - 1, 'label': dates[0].strftime('%Y-%m-%d %H:%M')}],
+            mb=35,
+            disabled=disabled,
+        )
+
+    return None
 
 
 def create_progress_bar(value):

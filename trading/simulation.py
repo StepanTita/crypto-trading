@@ -153,7 +153,7 @@ def simulate(fn):
                     'end_timestamp': timestamp,
                     'prices': prices,
                     'report': report,
-                    'graph': graphs_history,
+                    'graphs_history': graphs_history,
                 }
 
         yield from simulate_iteration()

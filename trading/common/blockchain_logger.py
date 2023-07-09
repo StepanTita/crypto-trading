@@ -31,4 +31,4 @@ if not logger.handlers:
     logger.addHandler(sh)
 
 # Set logging level to the logger
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)

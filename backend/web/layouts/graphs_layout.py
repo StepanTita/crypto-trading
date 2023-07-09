@@ -105,6 +105,10 @@ def create_graph_layout(config, session_id):
 def create_network(data: TradeNetwork = None):
     if data is None:
         return None
+
+    if len(data) == 0:
+        return None
+
     return cyto.Cytoscape(
         id='cytoscape',
         elements=[

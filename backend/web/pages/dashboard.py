@@ -73,9 +73,11 @@ def init_callbacks(app, config):
     ]
 
     def reset_cache(fsc):
+        graphs_history = fsc.get('graphs_history')
         fsc.clear()
         fsc.set('report_table', None)
         fsc.set('run_progress', None)
+        fsc.set('graphs_history', graphs_history)
 
     @app.callback(Output('empty-output', 'children'), Input('session-id', 'data'))
     def on_page_load(session_id):
@@ -86,10 +88,10 @@ def init_callbacks(app, config):
     @app.callback(
         [
             Output('loading-controls', 'children', allow_duplicate=True),
-            Output('step-control', 'children'),
-            Output('trades-predicted-plot', 'children'),
-            Output('trades-plot', 'children'),
-            Output('trading-graph', 'children'),
+            Output('step-control', 'children', allow_duplicate=True),
+            Output('trades-predicted-plot', 'children', allow_duplicate=True),
+            Output('trades-plot', 'children', allow_duplicate=True),
+            Output('trading-graph', 'children', allow_duplicate=True),
             Output('prices-plot', 'children', allow_duplicate=True),
         ],
         [
@@ -166,7 +168,8 @@ def init_callbacks(app, config):
                                                        min_spread=min_spread / 100):
             report_data = pd.DataFrame(run_res['report'])
             prices_data = run_res['prices']
-            graphs_history.append(run_res['graph'])
+            graphs_history = run_res['graphs_history']
+            fsc.set('graphs_history', graphs_history)
             fsc.set('report_table', report_data)
             fsc.set('prices', prices_data)
             fsc.set('run_progress',
@@ -238,18 +241,68 @@ def init_callbacks(app, config):
             create_controls(config, controls_state), \
             {'display': 'block'}
 
+    @app.callback(
+        Output('trading-graph', 'children', allow_duplicate=True),
+        [
+            Input('slider-step-control', 'value'),
+            State('session-id', 'data')
+        ],
+        prevent_initial_call=True)
+    def update_running(step: int, session_id: str):
+        fsc = FileSystemStore(f'./cache/{session_id}')
+
+        return update_network(fsc, step)
+
     @app.callback([
+        Output('step-control', 'children', allow_duplicate=True),
+        Output('trades-predicted-plot', 'children', allow_duplicate=True),
+        Output('trades-plot', 'children', allow_duplicate=True),
+        Output('trading-graph', 'children', allow_duplicate=True),
         Output('prices-plot', 'children', allow_duplicate=True),
-        Output('prices-plot', 'style'),
     ], [
         Trigger('interval-progress', 'n_intervals'),
+        State('select-secondary-granularity-select-control', 'value'),
+        State('slider-step-control', 'value'),
         State('session-id', 'data')
     ],
         prevent_initial_call=True)
-    def update_prices(n_intervals, session_id):
+    def update_running(n_intervals, secondary_granularity: int, step: int, session_id: str):
         fsc = FileSystemStore(f'./cache/{session_id}')
 
+        return update_step_control(fsc), \
+            update_trades_predictions(fsc), \
+            update_trades(fsc, secondary_granularity), \
+            update_network(fsc, step), \
+            update_prices(fsc)
+
+    def update_step_control(fsc: FileSystemStore):
+        data = fsc.get('report_table')
+        if data is None:
+            raise PreventUpdate
+        return create_step_control(data, disabled=True)
+
+    def update_trades_predictions(fsc: FileSystemStore):
+        data = fsc.get('report_table')
+        if data is None:
+            raise PreventUpdate
+        return create_trades_predictions(data)
+
+    def update_trades(fsc: FileSystemStore, gran: int):
+        data = fsc.get('report_table')
+        if data is None:
+            raise PreventUpdate
+        return create_trades(data, gran)
+
+    def update_network(fsc: FileSystemStore, graph_idx: int = -1):
+        data = fsc.get('graphs_history')
+        if data is None:
+            raise PreventUpdate
+        if len(data) == 0:
+            raise PreventUpdate
+        return create_network(data[graph_idx])
+
+    def update_prices(fsc: FileSystemStore):
         data = fsc.get('prices')
         if data is None:
             raise PreventUpdate
-        return create_prices(data), {'display': 'block'}
+        return create_prices(data)
