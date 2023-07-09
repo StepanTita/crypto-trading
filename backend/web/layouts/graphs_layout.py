@@ -7,10 +7,10 @@ import dash_mantine_components as dmc
 import plotly.graph_objects as go
 from dash import html, dcc
 
+from backend.web.layouts.bars import create_trades_predictions, create_trades
+from backend.web.layouts.controls import create_controls, create_step_control, create_progress_bar
+from backend.web.layouts.tables import create_arbitrage_table, create_report_table
 from trading.common.utils import TradeNetwork
-from .bars import create_trades_predictions, create_trades
-from .controls import create_controls, create_step_control, create_progress_bar
-from .tables import create_arbitrage_table, create_report_table
 
 
 def create_graph_layout(config, session_id):

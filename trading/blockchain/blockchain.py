@@ -3,10 +3,10 @@ from typing import Dict
 
 from trading.api.exchange_api import ExchangesAPI
 from trading.asset import Asset
+from trading.blockchain.exchange import Exchanger
+from trading.blockchain.fees import Fees
 from trading.common.blockchain_logger import logger
 from trading.common.constants import *
-from .exchange import Exchanger
-from .fees import Fees
 
 
 def get_blocktime(blockchain):

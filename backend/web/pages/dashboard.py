@@ -11,17 +11,17 @@ from dash_extensions.enrich import FileSystemStore, Trigger
 
 from backend import data
 from backend.utils import to_asset_pairs, to_controls_state_dict
+from backend.web.layouts.bars import create_trades
 from backend.web.layouts.controls import create_controls, create_step_control, create_progress_bar
 from backend.web.layouts.graphs_layout import create_graph_layout, create_trades_predictions, create_network, \
     create_prices
 from backend.web.layouts.tables import create_arbitrage_table, create_report_table
+from backend.web.pages.layout import html_layout
 from trading.api.exchange_api import ExchangesAPI
 from trading.blockchain import Blockchain
 from trading.common.constants import AVG_FEES
 from trading.exchanges.arbitrage_pairs import arbitrage_pairs
 from trading.strategies import name_to_strategy
-from .layout import html_layout
-from ..layouts.bars import create_trades
 
 
 def init_dashboard(server):
@@ -299,6 +299,8 @@ def init_callbacks(app, config):
             raise PreventUpdate
         if len(data) == 0:
             raise PreventUpdate
+        if graph_idx is None:
+            return create_network(data[-1])
         return create_network(data[graph_idx])
 
     def update_prices(fsc: FileSystemStore):

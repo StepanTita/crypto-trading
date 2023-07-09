@@ -1,15 +1,16 @@
 import datetime
+import os
 from typing import List
 
 import numpy as np
 from pymongo import MongoClient
 from pymongo.database import Database
 
-import trading_config
 from trading.api.exchange_api import ExchangesAPI
 from trading.asset import Asset
 from trading.common.blockchain_logger import logger
 from trading.common.utils import yellow, pink
+from trading_config.config import get_config
 
 MINUTE = 60
 HOUR = MINUTE * 60
@@ -48,14 +49,14 @@ def load_exchange(db: Database, ex: ExchangesAPI, symbols: List[str], platforms:
 
 
 def main():
-    cfg = trading_config.get_config('./config.local.yaml')
+    cfg = get_config(os.getenv('CONFIG'))
 
     client = MongoClient(cfg['database']['host'], cfg['database']['port'])
 
-    start_date = datetime.datetime.strptime('2023-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+    start_date = datetime.datetime.strptime(cfg['period']['from'], '%Y-%m-%d %H:%M:%S')
     start_timestamp = int(datetime.datetime.timestamp(start_date))
 
-    end_date = datetime.datetime.strptime('2023-01-01 00:01:00', '%Y-%m-%d %H:%M:%S')
+    end_date = datetime.datetime.strptime(cfg['period']['to'], '%Y-%m-%d %H:%M:%S')
     end_timestamp = int(datetime.datetime.timestamp(end_date))
 
     ex = ExchangesAPI(exchanges_names=cfg['platforms'])

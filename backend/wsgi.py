@@ -1,4 +1,4 @@
-from web import init_app
+from backend.web import init_app
 
 app = init_app()
 

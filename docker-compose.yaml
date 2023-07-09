@@ -1,0 +1,54 @@
+version: '3.7'
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: stepancons/crypto-trading-dashboard:latest
+    container_name: dashboard
+    restart: always
+    ports:
+      - '9090:8080'
+    volumes:
+      - type: bind
+        source: ./config.dev.yaml
+        target: /config.yaml
+    environment:
+      CONFIG: /config.yaml
+    networks:
+      - default
+
+  mongo_db:
+    image: mongo
+    container_name: mongo_db
+    hostname: mongo_db
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - default
+
+  bulk_load:
+    depends_on:
+      - mongo_db
+    build:
+      context: .
+      dockerfile: bulk-load/Dockerfile
+    #    image: stepancons/crypto-trading-bulk-load:latest
+    container_name: bulk_load
+    volumes:
+      - type: bind
+        source: ./config.dev.yaml
+        target: /config.yaml
+    environment:
+      CONFIG: /config.yaml
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  mongo_data:

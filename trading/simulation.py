@@ -3,10 +3,10 @@ import datetime
 from typing import List
 
 from trading.asset import Asset
+from trading.blockchain import Blockchain
 from trading.common.blockchain_logger import logger
 from trading.common.constants import *
 from trading.common.utils import *
-from .blockchain import Blockchain
 
 
 def generate(fn):
