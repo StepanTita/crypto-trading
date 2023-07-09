@@ -15,17 +15,15 @@ class Config:
 
     PLATFORMS = [
         {'value': 'binanceus', 'label': 'Binance US'},
-        {'value': 'binance', 'label': 'Binance'},
-        {'value': 'coinbase', 'label': 'Coinbase'},
+        {'value': 'huobi', 'label': 'Huobi'},
+        {'value': 'okx', 'label': 'OKX'},
         {'value': 'bybit', 'label': 'ByBit'},
-        {'value': 'kraken', 'label': 'Kraken'},
     ]
     ASSETS = [
         {'value': 'BTC', 'label': 'BTC'},
         {'value': 'USDT', 'label': 'USDT'},
         {'value': 'ETH', 'label': 'ETH'},
         {'value': 'LTC', 'label': 'LTC'},
-        {'value': 'DOGE', 'label': 'DOGE'},
     ]
 
     STRATEGIES = [
