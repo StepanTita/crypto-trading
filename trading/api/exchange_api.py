@@ -3,11 +3,10 @@ from typing import List
 
 import ccxt
 import numpy as np
-
 from pymongo.database import Database
 
 from trading.api.utils import cached_exchanges, cached_fees, log_continue
-from trading.blockchain.asset import Asset
+from trading.asset import Asset
 from trading.common.constants import MINUTE, HOUR, DAY
 from trading.retrier.retry import retry_with_exponential_backoff, ccxt_errors
 
@@ -22,14 +21,25 @@ def timespan_to_period(timespan: int) -> str:
     return '1m'
 
 
+def conform_timestamp(timestamp: int, timespan: int) -> int:
+    # round upper if more than half of the timespan has passed
+    if (timestamp % timespan) > timespan / 2:
+        return int(timestamp + (timespan - (timestamp % timespan)))
+    return int(timestamp - (timestamp % timespan))
+
+
 class ExchangesAPI:
     def __init__(self, db: Database = None, exchanges_names: List[str] = None):
         self.db = db
         self.exchanges = dict()
+
+        self.symbols = set()
         for name in exchanges_names:
             # instantiate the exchange by id
-            exchange = getattr(ccxt, name)({'enableRateLimit': True})
+            exchange: ccxt.Exchange = getattr(ccxt, name)({'enableRateLimit': True})
             exchange.load_markets()
+
+            self.symbols = self.symbols | set(exchange.symbols)
 
             assert exchange.has['fetchOHLCV']
 
@@ -49,26 +59,41 @@ class ExchangesAPI:
         np.float exchange rate or np.inf if not found
         """
 
-        if self.db:
-            price = self.db[f'exchange_price_{base_asset.platform}'].find_one(
-                {'base_asset': base_asset.symbol, 'quote_asset': quote_asset.symbol, 'timestamp': timestamp})
-            if price is not None:
-                return price
+        assert base_asset.platform == quote_asset.platform
+        timestamp = conform_timestamp(timestamp, timespan)
 
-        pair = f'{base_asset.symbol}/{quote_asset.symbol}'
-        if pair in self.exchanges[base_asset.platform].symbols:
-            ohlcv = self.exchanges[base_asset.platform].fetch_ohlcv(pair, timespan_to_period(timespan),
-                                                                    since=int(timestamp * 1000), limit=1)
-            return ohlcv[0][1]
-        else:
-            pair = f'{quote_asset.symbol}/{base_asset.symbol}'
-
-        if pair in self.exchanges[base_asset.platform].symbols:
-            ohlcv = self.exchanges[base_asset.platform].fetch_ohlcv(pair, timespan_to_period(timespan),
-                                                                    since=int(timestamp * 1000), limit=1)
-            return 1.0 / ohlcv[0][1]
+        if f'{base_asset.symbol}/{quote_asset.symbol}' in self.symbols:
+            return self.buy(timestamp, base_asset, quote_asset, timespan)
+        elif f'{quote_asset.symbol}/{base_asset.symbol}' in self.symbols:
+            return self.sell(timestamp, base_asset, quote_asset, timespan)
 
         return np.inf
+
+    def buy(self, timestamp: int, base_asset: Asset, quote_asset: Asset, timespan: int):
+        if self.db is not None:
+            record = self.db[f'exchange_price_{base_asset.platform}'].find_one(
+                {'base_asset': base_asset.symbol, 'quote_asset': quote_asset.symbol, 'timestamp': timestamp})
+            if record is not None:
+                return record['price']
+
+        pair = f'{base_asset.symbol}/{quote_asset.symbol}'
+
+        ohlcv = self.exchanges[base_asset.platform].fetch_ohlcv(pair, timespan_to_period(timespan),
+                                                                since=int(timestamp * 1000), limit=1)
+        return ohlcv[0][1]
+
+    def sell(self, timestamp: int, base_asset: Asset, quote_asset: Asset, timespan: int):
+        if self.db is not None:
+            record = self.db[f'exchange_price_{base_asset.platform}'].find_one(
+                {'base_asset': quote_asset.symbol, 'quote_asset': base_asset.symbol, 'timestamp': timestamp})
+            if record is not None:
+                return 1.0 / record['price']
+
+        pair = f'{quote_asset.symbol}/{base_asset.symbol}'
+
+        ohlcv = self.exchanges[base_asset.platform].fetch_ohlcv(pair, timespan_to_period(timespan),
+                                                                since=int(timestamp * 1000), limit=1)
+        return 1.0 / ohlcv[0][1]
 
     @log_continue
     @cached_fees

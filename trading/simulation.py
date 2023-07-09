@@ -1,17 +1,19 @@
 import copy
 import datetime
+from typing import List
 
+from trading.asset import Asset
 from trading.common.blockchain_logger import logger
 from trading.common.constants import *
 from trading.common.utils import *
-from .blockchain.asset import Asset
+from .blockchain import Blockchain
 
 
 def generate(fn):
     def wrapper(*args, **kwargs):
         res = None
-        for _, r, _ in fn(*args, **kwargs):
-            res = r  # ignore timestamp for demo purposes we don't need it
+        for run_res in fn(*args, **kwargs):
+            res = run_res['report']  # ignore timestamp for demo purposes we don't need it
         return res
 
     return wrapper
@@ -20,12 +22,23 @@ def generate(fn):
 def simulate(fn):
     """
     :param fn: function should run one cycle of arbitrage trading at the given moment in time
-    :return: report of the arbitrage trading for the given data
+    :return: dict(
+        end_timestamp: end timestamp of the step,
+        prices: of the assets in USD during this cycle
+        report: report of the arbitrage trading for the given data,
+        graph: network graph of the arbitrage
+    )
     """
 
-    def wrapper(blockchain, start_timestamp, end_timestamp, step, portfolio,
-                primary_granularity=DAY,
-                secondary_granularity=WEEK,
+    def wrapper(blockchain: Blockchain,
+                start_timestamp: int,
+                end_timestamp: int,
+                timespan: int,
+                portfolio: dict,
+                platforms: List[str],
+                symbols: List[str],
+                primary_granularity: int = DAY,
+                secondary_granularity: int = WEEK,
                 *args, **kwargs):
         logger.info('Running simulation...')
         report = {
@@ -42,8 +55,12 @@ def simulate(fn):
         for platform, wallet in portfolio.items():
             for asset, value in wallet.items():
                 total_usdt_before += blockchain.exchanger.exchange(start_timestamp, Asset(asset, platform),
-                                                                   Asset('USDT', platform)) * value
+                                                                   Asset('USDT', platform), timespan) * value
         logger.info(yellow(f'Total USDT before arbitrage: {total_usdt_before}'))
+
+        assets = [Asset(symbol, platform) for symbol in symbols for platform in platforms]
+
+        prices = []
 
         def simulate_iteration():
             timestamp = start_timestamp
@@ -56,10 +73,29 @@ def simulate(fn):
             while timestamp < end_timestamp:
                 logger.debug(yellow(f'Timestamp: {datetime.datetime.fromtimestamp(timestamp)}'))
 
-                next_timestamp, max_benefit, real_benefit, coins, trade_network = fn(blockchain, timestamp, portfolio,
-                                                                                     *args, **kwargs)
+                prices.append([{
+                    'timestamp': timestamp,
+                    'symbol': asset.symbol,
+                    'platform': asset.platform,
+                    'price': blockchain.exchanger.exchange(
+                        timestamp,
+                        asset,
+                        Asset('USDT', asset.platform),
+                        timespan
+                    )
+                } for asset in assets])
+
+                next_timestamp, max_benefit, real_benefit, coins, trade_network = fn(*args,
+                                                                                     blockchain=blockchain,
+                                                                                     timespan=timespan,
+                                                                                     timestamp=timestamp,
+                                                                                     portfolio=portfolio,
+                                                                                     platforms=platforms,
+                                                                                     symbols=symbols,
+                                                                                     assets=assets,
+                                                                                     **kwargs)
                 if next_timestamp == timestamp:  # if we didn't really trade, then just go to the next period
-                    next_timestamp = timestamp + step
+                    next_timestamp = timestamp + timespan
 
                 # Report formation:
                 if max_benefit > 0:
@@ -113,7 +149,12 @@ def simulate(fn):
 
                 timestamp = next_timestamp
 
-                yield timestamp, report, graphs_history
+                yield {
+                    'end_timestamp': timestamp,
+                    'prices': prices,
+                    'report': report,
+                    'graph': graphs_history,
+                }
 
         yield from simulate_iteration()
 
@@ -121,7 +162,7 @@ def simulate(fn):
         for platform, wallet in portfolio.items():
             for asset, value in wallet.items():
                 total_usdt_after += blockchain.exchanger.exchange(start_timestamp, Asset(asset, platform),
-                                                                  Asset('USDT', platform)) * value
+                                                                  Asset('USDT', platform), timespan) * value
         logger.info(yellow(f'Total USDT after arbitrage: {total_usdt_after}'))
 
         if total_usdt_after - total_usdt_before < 0:

@@ -1,5 +1,6 @@
-from trading.common.utils import get_blockchain
 import numpy as np
+
+from trading.common.utils import get_blockchain
 
 
 class Fees:
@@ -51,7 +52,7 @@ def main():
     date = datetime.datetime.strptime('2022-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
     timestamp = int(datetime.datetime.timestamp(date))
 
-    from asset import Asset
+    from trading.asset import Asset
     base_asset = Asset('BTC', 'gemini')
     quote_asset = Asset('USDT', 'gemini')
 

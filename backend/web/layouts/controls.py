@@ -1,14 +1,33 @@
+from datetime import datetime, date
+
 import dash_mantine_components as dmc
+import pandas as pd
 from dash import html
-from datetime import date, datetime
 
 from trading.common.constants import *
 
 
-def create_controls(config, initial_state=dict()):
+def create_controls(config, initial_state=None):
+    if initial_state is None:
+        initial_state = dict()
+
     return dmc.LoadingOverlay(html.Div(
         id='controls',
         children=[
+            html.Div(className='row', children=[
+                html.Div(className='full', children=[
+                    dmc.JsonInput(
+                        id='json-input-portfolio-control',
+                        value=config.get('PORTFOLIO'),
+                        label='Portfolio in JSON',
+                        placeholder='{"binanceus": {"USDT": 1000,},"bybit": {"USDT": 1000,},}',
+                        validationError='Invalid json',
+                        formatOnBlur=True,
+                        autosize=True,
+                        minRows=4,
+                    )
+                ])
+            ]),
             html.Div(className='row', children=[
                 html.Div(className='full', children=[
                     dmc.Select(id='select-strategy-select-control', label='Select strategy',
@@ -19,7 +38,8 @@ def create_controls(config, initial_state=dict()):
             html.Div(className='row', children=[
                 html.Div(className='half column', children=[
                     html.Div(id='select-primary-granularity-control', children=[
-                        dmc.Select(id='select-primary-granularity-select-control', label='Select primary granularity',
+                        dmc.Select(id='select-primary-granularity-select-control',
+                                   label='Select primary granularity',
                                    value=initial_state.get('primary_granularity', MINUTE),
                                    data=config.get('GRANULARITIES'))
                     ])
@@ -40,7 +60,8 @@ def create_controls(config, initial_state=dict()):
                         id='date-range-picker-control',
                         label='Date Range',
                         minDate=config.get('DATE_RANGE', {'min_date': date(2021, 1, 1)})['min_date'],
-                        maxDate=min(config.get('DATE_RANGE', {'max_date': date(2021, 1, 1)})['max_date'], datetime.now().date()),
+                        maxDate=min(config.get('DATE_RANGE', {'max_date': date(2021, 1, 1)})['max_date'],
+                                    datetime.now().date()),
                         value=initial_state.get('date_range', [])
                     ),
                 ]),
@@ -142,7 +163,8 @@ def create_controls(config, initial_state=dict()):
                 dmc.Group(children=[
                     dmc.Button('Run!', id='run-button-control', variant='gradient'),
                     dmc.Button('View Arbitrages', id='view-arbitrage-button-control', variant='gradient'),
-                    dmc.Checkbox(id='use-fees-checkbox-control', label='Enable fees estimation? (experimental)', checked=False)
+                    dmc.Checkbox(id='use-fees-checkbox-control', label='Enable fees estimation? (experimental)',
+                                 checked=False)
                 ]),
             ])
         ]
@@ -151,7 +173,7 @@ def create_controls(config, initial_state=dict()):
 
 
 # TODO: fix labels
-def create_step_control(data=None, disabled=True):
+def create_step_control(data: pd.DataFrame = None, disabled: bool = True):
     if data is None:
         return None
     return dmc.Slider(

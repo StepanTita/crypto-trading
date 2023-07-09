@@ -3,16 +3,25 @@ from itertools import combinations
 
 import numpy as np
 
-from trading.blockchain.asset import Asset
+from trading.asset import Asset
+from trading.blockchain.runner import Runner
 from trading.common.blockchain_logger import logger
 from trading.common.utils import *
-from trading.blockchain.runner import Runner
 from trading.simulation import simulate
 
 
+# DEPRECATED: This is method might not be compatible with current simulation interface
 @simulate
-def strategy_simple_triangle_generator(blockchain, timestamp, portfolio, platform, symbols, max_trade_ratio,
-                                       min_spread=0.015):
+def strategy_simple_triangle_generator(*args,
+                                       blockchain,
+                                       timestamp,
+                                       timespan,
+                                       portfolio,
+                                       platform,
+                                       symbols,
+                                       max_trade_ratio,
+                                       min_spread=0.015,
+                                       **kwargs):
     max_benefit = 0
     real_benefit = 0
 

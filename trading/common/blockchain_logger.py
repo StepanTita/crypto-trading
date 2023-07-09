@@ -23,12 +23,12 @@ class CustomFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-dh = logging.StreamHandler()
-dh.setFormatter(CustomFormatter())
+sh = logging.StreamHandler()
+sh.setFormatter(CustomFormatter())
 
 if not logger.handlers:
     # link handler to logger
-    logger.addHandler(dh)
+    logger.addHandler(sh)
 
 # Set logging level to the logger
 logger.setLevel(logging.DEBUG)

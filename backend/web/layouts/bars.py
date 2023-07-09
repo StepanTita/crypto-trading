@@ -1,7 +1,6 @@
+import pandas as pd
 import plotly.graph_objects as go
 from dash import dcc
-
-import pandas as pd
 
 from trading.common.constants import *
 
@@ -17,9 +16,12 @@ tickformat = [
 ]
 
 
-def create_trades(data=None, granularity=HOUR):
+def create_trades(data: pd.DataFrame = None, granularity: int = HOUR):
     # replace those with empty container or something
     if data is None:
+        return None
+
+    if len(data) == 0:
         return None
 
     data['dates'] = data['dates'].apply(
@@ -43,9 +45,13 @@ def create_trades(data=None, granularity=HOUR):
     )))
 
 
-def create_trades_predictions(data=None):
+def create_trades_predictions(data: pd.DataFrame = None):
     if data is None:
         return None
+
+    if len(data) == 0:
+        return None
+
     return dcc.Graph(figure=go.Figure(data=(
         go.Bar(x=data['dates'].dt.strftime('%Y-%m-%d %H:%M'),
                y=data['predicted'],

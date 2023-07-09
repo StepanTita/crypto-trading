@@ -1,5 +1,7 @@
 from collections import namedtuple
 
+from trading.common.constants import MINUTE
+
 
 def style(s, style):
     return style + s + '\033[0m'
@@ -41,9 +43,9 @@ def underline(s):
     return style(s, '\033[4m')
 
 
-def conform_timestamp(old, new):
-    if (new - old) % 60 != 0:
-        return new + 60 - ((new - old) % 60)
+def conform_timestamp(old, new, timespan=MINUTE):
+    if (new - old) % timespan != 0:
+        return new + timespan - ((new - old) % timespan)
     return new
 
 

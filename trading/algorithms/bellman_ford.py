@@ -1,6 +1,8 @@
 import numpy as np
-from typing import List, Tuple
+from typing import List
 from collections import deque
+
+from trading.algorithms.network import Edge
 
 
 def relax(from_node: int, to_node: int, weight: float, distances: List[float], prev: List[int]) -> bool:
@@ -11,38 +13,38 @@ def relax(from_node: int, to_node: int, weight: float, distances: List[float], p
     return True
 
 
-def find_negative_cycle(adj_list: List[List[Tuple[int, float]]], source: int) -> List[int] | None:
+def find_negative_cycle(edges_list: List[Edge], source: int) -> List[int] | None:
     # Initialize distances and prev arrays. All distances but the distance to
     # the source node are infinite, distance to the source node is zero.
-    nodes = len(adj_list)
+    nodes = set()
+    for edge in edges_list:
+        nodes.add(edge.to_node)
+        nodes.add(edge.from_node)
 
-    distances = [0.0 if i == source else np.inf for i in range(nodes)]
-    prev = [-1 for _ in range(nodes)]
+    nodes_count = len(nodes)
+
+    distances = [0.0 if i == source else np.inf for i in range(nodes_count)]
+    prev = [-1 for _ in range(nodes_count)]
 
     # Relax all edges N times where N is the number of nodes.
-    for i in range(nodes):
-        for from_node, edges in enumerate(adj_list):
-            for to_node, weight in edges:
-                relax(from_node, to_node, weight, distances, prev)
+    for i in range(nodes_count):
+        for edge in edges_list:
+            relax(edge.from_node, edge.to_node, edge.weight, distances, prev)
 
     # Try to relax at least one more edge. If it's possible memorize the node,
     # otherwise return from the method.
     node = None
-    found = False
-    for from_node, edges in enumerate(adj_list):
-        for to_node, weight in edges:
-            if relax(from_node, to_node, weight, distances, prev):
-                node = to_node
-                found = True
-                break
-        if found:
+    for edge in edges_list:
+        if relax(edge.from_node, edge.to_node, edge.weight, distances, prev):
+            node = edge.to_node
             break
+
     if node is None:
         return None
 
     # Step back N times where N is the number of nodes. As a result, the node will
     # be in the loop for sure.
-    for i in range(nodes):
+    for _ in range(nodes_count):
         node = prev[node]
 
     # Recover the loop by the node that is inside it and prev links.

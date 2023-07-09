@@ -1,18 +1,22 @@
 import datetime
+from typing import Dict
 
 import numpy as np
 
-from .asset import Asset
+from trading.api.exchange_api import ExchangesAPI
+from trading.asset import Asset
 
 
 class Exchanger:
-    def __init__(self, data=None, api=None, use_api=True):
+    def __init__(self,
+                 data: Dict[str, Dict[str, Dict[str, Dict[int, float]]]] = None,
+                 api: ExchangesAPI = None,
+                 ):
         self.data = data
         self.api = api
-        self.use_api = use_api
 
     # Assets price:
-    def exchange(self, timestamp, base_asset: Asset, quote_asset: Asset):
+    def exchange(self, timestamp: int, base_asset: Asset, quote_asset: Asset, timespan: int):
         """
         function to return the price of the quote asset in the terms of a quote asset
         for the given timestamp
@@ -21,12 +25,13 @@ class Exchanger:
         timestamp: int
         base_asset: str anyof[USDT, EUR, BTC]
         quote_asset: str anyof[USDT, EUR, BTC]
+        timespan: int time interval to account for
         return: float
         """
         if base_asset.symbol == quote_asset.symbol:
             return 1.0
         if self.api is not None:
-            return self.api.exchange(timestamp, base_asset, quote_asset)
+            return self.api.exchange(timestamp, base_asset, quote_asset, timespan)
         return self.data[base_asset.platform].get(base_asset.symbol, {}).get(quote_asset.symbol, {}).get(timestamp,
                                                                                                          np.inf)
 

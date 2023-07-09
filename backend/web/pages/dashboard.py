@@ -1,29 +1,33 @@
 import datetime
+import json
 import uuid
+from typing import List, Tuple
 
 import dash
 import pandas as pd
 from dash import html, Output, Input, State
 from dash.exceptions import PreventUpdate
+from dash_extensions.enrich import FileSystemStore, Trigger
 
+from backend import data
+from backend.utils import to_asset_pairs, to_controls_state_dict
+from backend.web.layouts.controls import create_controls, create_step_control, create_progress_bar
+from backend.web.layouts.graphs_layout import create_graph_layout, create_trades_predictions, create_network, \
+    create_prices
+from backend.web.layouts.tables import create_arbitrage_table, create_report_table
 from trading.api.exchange_api import ExchangesAPI
 from trading.blockchain import Blockchain
+from trading.common.constants import AVG_FEES
 from trading.exchanges.arbitrage_pairs import arbitrage_pairs
 from trading.strategies import name_to_strategy
 from .layout import html_layout
-
-from dash_extensions.enrich import FileSystemStore, Trigger
-
-from backend.web.layouts.graphs_layout import create_graph_layout, create_trades_predictions, create_network
-from backend.web.layouts.tables import create_arbitrage_table, create_report_table
-from backend.utils import to_asset_pairs, to_controls_state_dict
-from backend.web.layouts.controls import create_controls, create_step_control, create_progress_bar
 from ..layouts.bars import create_trades
 
 
 def init_dashboard(server):
     """Create a Plotly Dash dashboard."""
     dash_app = dash.Dash(
+        title='Crypto Arbitrage Analytics Bot',
         server=server,
         routes_pathname_prefix='/dashapp/',
         external_stylesheets=[
@@ -34,6 +38,8 @@ def init_dashboard(server):
     # Initialize callbacks after our app is loaded
     # Pass dash_app as a parameter
     init_callbacks(dash_app, server.config)
+
+    data.init_client(server.config.get('TRADING_CONFIG'))
 
     dash_app.index_string = html_layout
 
@@ -52,6 +58,7 @@ def init_dashboard(server):
 
 def init_callbacks(app, config):
     controls_state = [
+        State('json-input-portfolio-control', 'value'),
         State('select-strategy-select-control', 'value'),
         State('multiselect-platforms-select-control', 'value'),
         State('use-fees-checkbox-control', 'checked'),
@@ -82,7 +89,8 @@ def init_callbacks(app, config):
             Output('step-control', 'children'),
             Output('trades-predicted-plot', 'children'),
             Output('trades-plot', 'children'),
-            Output('trading-graph', 'children')
+            Output('trading-graph', 'children'),
+            Output('prices-plot', 'children', allow_duplicate=True),
         ],
         [
             Input('run-button-control', 'n_clicks'),
@@ -92,32 +100,26 @@ def init_callbacks(app, config):
         prevent_initial_call=True
     )
     def update_report_state(
-            n_clicks,
-            strategy_name,
-            platforms,
-            use_fees,
-            date_range,
-            start_time,
-            end_time,
-            assets,
-            max_trade_ratio,
-            min_spread,
-            primary_granularity,
-            secondary_granularity,
-            session_id
+            run_n_clicks,
+            json_portfolio: str,
+            strategy_name: str,
+            platforms: List[str],
+            use_fees: bool,
+            date_range: Tuple[str],
+            start_time: str,
+            end_time: str,
+            assets: List[str],
+            max_trade_ratio: float,
+            min_spread: float,
+            primary_granularity: int,
+            secondary_granularity: int,
+            session_id: str
     ):
-        if n_clicks is None:
+        if run_n_clicks is None:
             raise PreventUpdate
 
-        fsc = FileSystemStore(f'./cache/{session_id}')
-        reset_cache(fsc)
-
-        prices_api = ExchangesAPI(exchanges_names=platforms)
-        # TODO: real fees and prices data
-        blockchain = Blockchain(prices_api=prices_api, fees_data=None, prices_data=None,
-                                disable_fees=not use_fees)
-
         controls_state = dict(
+            json_portfolio=json_portfolio,
             strategy_name=strategy_name,
             platforms=platforms,
             fees_checkbox=use_fees,
@@ -131,39 +133,51 @@ def init_callbacks(app, config):
             secondary_granularity=secondary_granularity
         )
 
+        fsc = FileSystemStore(f'./cache/{session_id}')
+        reset_cache(fsc)
+
+        prices_api = ExchangesAPI(db=data.get_db('crypto_exchanges'), exchanges_names=platforms)
+
+        # TODO: real fees and prices data
+        blockchain = Blockchain(prices_api=prices_api,
+                                fees_data=AVG_FEES,
+                                prices_data=None,
+                                disable_fees=not use_fees)
+
         start_date = datetime.datetime.strptime(f'{date_range[0]} {start_time.split("T")[1]}', '%Y-%m-%d %H:%M:%S')
         start_timestamp = int(datetime.datetime.timestamp(start_date))
 
         end_date = datetime.datetime.strptime(f'{date_range[1]} {end_time.split("T")[1]}', '%Y-%m-%d %H:%M:%S')
         end_timestamp = int(datetime.datetime.timestamp(end_date))
 
-        data = None
+        report_data = None
+        prices_data = None
         graphs_history = None
-        for t, r, g in name_to_strategy(strategy_name)(blockchain, start_timestamp=start_timestamp,
+        for run_res in name_to_strategy(strategy_name)(blockchain=blockchain,
+                                                       start_timestamp=start_timestamp,
                                                        end_timestamp=end_timestamp,
-                                                       step=primary_granularity,
+                                                       timespan=primary_granularity,
                                                        primary_granularity=primary_granularity,
                                                        secondary_granularity=secondary_granularity,
-                                                       portfolio={
-                                                           'binanceus': {
-                                                               'USDT': 1000,
-                                                           },
-                                                           'bybit': {
-                                                               'USDT': 1000,
-                                                           },
-                                                       }, platforms=platforms, symbols=assets,
+                                                       portfolio=json.loads(json_portfolio),
+                                                       platforms=platforms,
+                                                       symbols=assets,
                                                        max_trade_ratio=max_trade_ratio / 100,
                                                        min_spread=min_spread / 100):
-            data = pd.DataFrame(r)
-            graphs_history = g
-            fsc.set('report_table', data)
-            fsc.set('run_progress', (t - start_timestamp) / (end_timestamp - start_timestamp) * 100)
+            report_data = pd.DataFrame(run_res['report'])
+            prices_data = run_res['prices']
+            graphs_history = run_res['graph']
+            fsc.set('report_table', report_data)
+            fsc.set('prices', prices_data)
+            fsc.set('run_progress',
+                    (run_res['end_timestamp'] - start_timestamp) / (end_timestamp - start_timestamp) * 100)
 
         return create_controls(config, controls_state), \
-            create_step_control(data, disabled=False), \
-            create_trades_predictions(data), \
-            create_trades(data, secondary_granularity), \
-            create_network(graphs_history[-1])
+            create_step_control(report_data, disabled=False), \
+            create_trades_predictions(report_data), \
+            create_trades(report_data, secondary_granularity), \
+            create_network(graphs_history[-1]), \
+            create_prices(prices_data)
 
     @app.callback([
         Output('report-table-output', 'children'),
@@ -223,3 +237,19 @@ def init_callbacks(app, config):
             arbitrage_pairs(controls_state['platforms'], to_asset_pairs(controls_state['assets']))), \
             create_controls(config, controls_state), \
             {'display': 'block'}
+
+    @app.callback([
+        Output('prices-plot', 'children', allow_duplicate=True),
+        Output('prices-plot', 'style'),
+    ], [
+        Trigger('interval-progress', 'n_intervals'),
+        State('session-id', 'data')
+    ],
+        prevent_initial_call=True)
+    def update_prices(n_intervals, session_id):
+        fsc = FileSystemStore(f'./cache/{session_id}')
+
+        data = fsc.get('prices')
+        if data is None:
+            raise PreventUpdate
+        return create_prices(data), {'display': 'block'}

@@ -2,15 +2,25 @@ import datetime
 
 import numpy as np
 
-from trading.blockchain.asset import Asset
+from trading.asset import Asset
+from trading.blockchain.runner import Runner
 from trading.common.blockchain_logger import logger
 from trading.common.utils import *
-from trading.blockchain.runner import Runner
 from trading.simulation import simulate
 
 
+# DEPRECATED: This is method might not be compatible with current simulation interface
 @simulate
-def strategy_between_platforms_generator(blockchain, timestamp, portfolio, symbols, platforms, max_trade_ratio, min_spread=0.005):
+def strategy_between_platforms_generator(*args,
+                                         blockchain,
+                                         timestamp,
+                                         timespan,
+                                         portfolio,
+                                         symbols,
+                                         platforms,
+                                         max_trade_ratio,
+                                         min_spread=0.005,
+                                         **kwargs):
     max_benefit = 0
     real_benefit = 0
 

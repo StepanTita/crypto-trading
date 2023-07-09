@@ -1,3 +1,5 @@
+import os
+
 import yaml
 
 
@@ -7,4 +9,4 @@ def get_config(path):
 
 
 if __name__ == 'main':
-    print(get_config('../config.local.yaml'))
+    print(get_config(os.getenv('CONFIG')))

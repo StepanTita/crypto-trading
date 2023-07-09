@@ -1,8 +1,13 @@
+import datetime
+from collections import defaultdict
+from typing import List
+
 import dash_cytoscape as cyto
 import dash_mantine_components as dmc
 import plotly.graph_objects as go
 from dash import html, dcc
 
+from trading.common.utils import TradeNetwork
 from .bars import create_trades_predictions, create_trades
 from .controls import create_controls, create_step_control, create_progress_bar
 from .tables import create_arbitrage_table, create_report_table
@@ -97,7 +102,7 @@ def create_graph_layout(config, session_id):
     ]
 
 
-def create_network(data=None):
+def create_network(data: TradeNetwork = None):
     if data is None:
         return None
     return cyto.Cytoscape(
@@ -105,11 +110,12 @@ def create_network(data=None):
         elements=[
             *[{'data': {'id': f'{asset.symbol}_{asset.platform}', 'label': f'{asset.symbol} ({asset.platform})'}}
               for asset in data.assets_mapping],
-            # TODO: rework with edges and use edge type here
-            *[{'data': {'id': f'{edge[0].symbol}_{edge[0].platform}-{edge[1].symbol}_{edge[1].platform}',
-                        'source': f'{edge[0].symbol}_{edge[0].platform}',
-                        'target': f'{edge[1].symbol}_{edge[1].platform}', 'weight': round(edge[2], 2)}} for edge in
-              data.edges_list],
+            *[{'data': {
+                'id': f'{edge.from_asset.symbol}_{edge.from_asset.platform}-{edge.to_asset.symbol}_{edge.to_asset.platform}',
+                'source': f'{edge.from_asset.symbol}_{edge.from_asset.platform}',
+                'target': f'{edge.to_asset.symbol}_{edge.to_asset.platform}', 'weight': round(edge.weight, 2)}} for edge
+                in
+                data.edges_list],
         ],
         layout={'name': 'circle'},
         style={'width': '100%', 'height': '100%'},
@@ -145,7 +151,7 @@ def create_network(data=None):
                 }
             },
             *[{
-                'selector': f'#{edge[0].symbol}_{edge[0].platform}-{edge[1].symbol}_{edge[1].platform}',
+                'selector': f'#{edge.from_asset.symbol}_{edge.from_asset.platform}-{edge.to_asset.symbol}_{edge.to_asset.platform}',
                 'style': {
                     'curve-style': 'bezier',
                 }
@@ -154,8 +160,29 @@ def create_network(data=None):
     )
 
 
-def create_prices():
-    return dcc.Graph(figure=go.Figure(data=(
-        go.Scatter(x=[1, 2, 3, 4], y=[0, 2, 3, 5], fill='tozeroy'),
-        go.Scatter(x=[1, 2, 3, 4], y=[3, 5, 1, 7], fill='tonexty'),
-    )))
+def create_prices(data: List[List[dict]] = None):
+    if data is None:
+        return None
+
+    prices = defaultdict(list)
+    timestamps = []
+
+    first = True
+    for period_prices in data:
+        for p in period_prices:
+            prices[f'{p["symbol"]} ({p["platform"]})'].append(p['price'])
+        if len(period_prices) > 0:
+            timestamps.append(datetime.datetime.fromtimestamp(period_prices[0]['timestamp']))
+
+    fig = go.Figure(
+        data=
+        [
+            go.Scatter(x=timestamps, y=price, fill='tonexty', name=k)
+            for k, price in prices.items()
+        ]
+    )
+    fig.update_yaxes(type='log')
+
+    return dcc.Graph(
+        figure=fig
+    )

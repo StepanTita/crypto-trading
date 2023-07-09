@@ -5,9 +5,9 @@ import numpy as np
 from pymongo import MongoClient
 from pymongo.database import Database
 
-import config
+import trading_config
 from trading.api.exchange_api import ExchangesAPI
-from trading.blockchain.asset import Asset
+from trading.asset import Asset
 from trading.common.blockchain_logger import logger
 from trading.common.utils import yellow, pink
 
@@ -24,7 +24,7 @@ def load_exchange(db: Database, ex: ExchangesAPI, symbols: List[str], platforms:
             logger.info(pink(f'Running symbol: {symbol}'))
             curr_timestamp = start_timestamp
 
-            while curr_timestamp < end_timestamp:
+            while curr_timestamp <= end_timestamp:
                 logger.debug(f'Running timestamp: {datetime.datetime.fromtimestamp(curr_timestamp)}')
 
                 base_asset = Asset(symbol.split('/')[0], platform)
@@ -36,8 +36,6 @@ def load_exchange(db: Database, ex: ExchangesAPI, symbols: List[str], platforms:
                     logger.warning(
                         f'Price is unknown: {base_asset}:{quote_asset}. Platform: {platform}. Timestamp: {datetime.datetime.fromtimestamp(curr_timestamp)}')
 
-                curr_timestamp += timestep
-
                 db[f'exchange_price_{platform}'].insert_one({
                     'base_asset': base_asset.symbol,
                     'quote_asset': quote_asset.symbol,
@@ -46,16 +44,18 @@ def load_exchange(db: Database, ex: ExchangesAPI, symbols: List[str], platforms:
                     'price': price,
                 })
 
+                curr_timestamp += timestep
+
 
 def main():
-    cfg = config.get_config('./config.local.yaml')
+    cfg = trading_config.get_config('./config.local.yaml')
 
     client = MongoClient(cfg['database']['host'], cfg['database']['port'])
 
     start_date = datetime.datetime.strptime('2023-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
     start_timestamp = int(datetime.datetime.timestamp(start_date))
 
-    end_date = datetime.datetime.strptime('2023-04-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+    end_date = datetime.datetime.strptime('2023-01-01 00:01:00', '%Y-%m-%d %H:%M:%S')
     end_timestamp = int(datetime.datetime.timestamp(end_date))
 
     ex = ExchangesAPI(exchanges_names=cfg['platforms'])

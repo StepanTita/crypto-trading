@@ -1,10 +1,15 @@
+import os
 from datetime import date
+
+from trading_config import get_config
+
 
 class Config:
     """Set Flask config variables."""
 
-    FLASK_ENV = 'development'
+    ENV = 'development'
     TESTING = True
+    DEBUG = True
     STATIC_FOLDER = 'static'
     TEMPLATES_FOLDER = 'templates'
 
@@ -38,5 +43,16 @@ class Config:
 
     DATE_RANGE = {
         'min_date': date(2023, 1, 1),
-        'max_date': date(2023, 3, 1)
+        'max_date': date(2023, 4, 1)
     }
+
+    PORTFOLIO = """{
+        "binanceus": {
+            "USDT": 1000
+        },
+        "bybit": {
+            "USDT": 1000
+        }
+}"""
+
+    TRADING_CONFIG = get_config(os.getenv('CONFIG'))
