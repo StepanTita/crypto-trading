@@ -1,6 +1,7 @@
 import os
-from datetime import date
+from datetime import datetime
 
+from localization.localization import get_localization
 from trading_config import get_config
 
 
@@ -13,44 +14,40 @@ class Config:
     STATIC_FOLDER = 'static'
     TEMPLATES_FOLDER = 'templates'
 
+    LOCALES = [
+        {'value': 'en', 'label': 'English'},
+        {'value': 'ru', 'label': 'Русский'},
+    ]
+
+    TRADING_CONFIG = get_config(os.getenv('CONFIG'))
+
     PLATFORMS = [
-        {'value': 'binanceus', 'label': 'Binance US'},
-        {'value': 'huobi', 'label': 'Huobi'},
-        {'value': 'okx', 'label': 'OKX'},
-        {'value': 'bybit', 'label': 'ByBit'},
+        {'value': platform.replace('_', ''), 'label': platform.replace('_', '').title()}
+        for platform in TRADING_CONFIG['platforms']
     ]
     ASSETS = [
-        {'value': 'BTC', 'label': 'BTC'},
-        {'value': 'USDT', 'label': 'USDT'},
-        {'value': 'ETH', 'label': 'ETH'},
-        {'value': 'LTC', 'label': 'LTC'},
+        {'value': symbol, 'label': symbol}
+        for symbol in set(
+            list(map(lambda x: x.split('/')[0], TRADING_CONFIG['symbols'])) +
+            list(map(lambda x: x.split('/')[1], TRADING_CONFIG['symbols'])))
     ]
 
     STRATEGIES = [
-        {'value': 'simple-single-platform', 'label': 'Simple Single Platform (deprecated)'},
-        {'value': 'simple-multiple-platforms', 'label': 'Simple Multiple Platforms (deprecated)'},
         {'value': 'bellman-ford', 'label': 'Bellman-Ford'},
     ]
 
     GRANULARITIES = [
-        {'value': 60, 'label': 'Minute'},
+        # {'value': 60, 'label': 'Minute'},
         {'value': 3600, 'label': 'Hour'},
         {'value': 24 * 3600, 'label': 'Day'},
         {'value': 7 * 24 * 3600, 'label': 'Week'}
     ]
 
     DATE_RANGE = {
-        'min_date': date(2023, 1, 1),
-        'max_date': date(2023, 4, 1)
+        'min_date': datetime.fromisoformat(TRADING_CONFIG['period']['from']).date(),
+        'max_date': datetime.fromisoformat(TRADING_CONFIG['period']['to']).date()
     }
 
-    PORTFOLIO = """{
-        "binanceus": {
-            "USDT": 1000
-        },
-        "bybit": {
-            "USDT": 1000
-        }
-}"""
+    PORTFOLIO_AMOUNT = 1000
 
-    TRADING_CONFIG = get_config(os.getenv('CONFIG'))
+    LOCALIZATION = get_localization(os.getenv('LOCALE'))

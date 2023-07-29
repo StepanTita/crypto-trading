@@ -1,6 +1,15 @@
-from collections import namedtuple
+from collections import namedtuple, defaultdict
+from functools import partial
+from itertools import repeat
 
 from trading.common.constants import MINUTE
+
+
+def nested_defaultdict(default_factory, depth=1):
+    result = partial(defaultdict, default_factory)
+    for _ in repeat(None, depth - 1):
+        result = partial(defaultdict, result)
+    return result()
 
 
 def style(s, style):
@@ -68,4 +77,4 @@ def get_blockchain(asset):
     }[asset.symbol]
 
 
-TradeNetwork = namedtuple('TradeNetwork', 'edges_list assets_mapping')
+TradeNetwork = namedtuple('TradeNetwork', 'edges_list assets_mapping neg_cycle true_neg')

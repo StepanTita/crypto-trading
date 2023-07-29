@@ -35,11 +35,10 @@ more-itertools==9.1.0
 multidict==6.0.4
 nest-asyncio==1.5.6
 numexpr==2.8.4
-numpy==1.25.0
+numpy==1.25.1
 pandas==1.5.3
 pip==23.1.2
 plotly==5.9.0
-py==1.11.0
 pycares==4.3.0
 pycparser==2.21
 pymongo==3.12.0

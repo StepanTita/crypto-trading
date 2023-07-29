@@ -11,16 +11,18 @@ def to_asset_pairs(assets_list):
 
 def to_controls_state_dict(*args):
     return dict(
-        son_portfolio=args[0],
-        strategy_name=args[1],
-        platforms=args[2],
-        fees_checkbox=args[3],
-        date_range=args[4],
-        start_time=args[5],
-        end_time=args[6],
-        assets=args[7],
-        max_trade_ratio=args[8],
-        min_spread=args[9],
-        primary_granularity=args[10],
-        secondary_granularity=args[11]
+        portfolio_platforms=args[0],
+        portfolio_asset=args[1],
+        portfolio_amount=args[2],
+        strategy_name=args[3],
+        platforms=args[4],
+        fees_checkbox=args[5],
+        date_range=args[6],
+        start_time=args[7],
+        end_time=args[8],
+        assets=args[9],
+        max_trade_ratio=args[10],
+        min_spread=args[11],
+        primary_granularity=args[12],
+        secondary_granularity=args[13]
     )

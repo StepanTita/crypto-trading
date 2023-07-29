@@ -37,6 +37,7 @@ class ExchangesAPI:
         for name in exchanges_names:
             # instantiate the exchange by id
             exchange: ccxt.Exchange = getattr(ccxt, name)({'enableRateLimit': True})
+
             exchange.load_markets()
 
             self.symbols = self.symbols | set(exchange.symbols)
@@ -112,14 +113,14 @@ class ExchangesAPI:
 
 
 if __name__ == '__main__':
-    ex = ExchangesAPI(exchanges_names=['binanceus', 'kraken'])
+    ex = ExchangesAPI(exchanges_names=['bybit'])
 
-    date = datetime.datetime.strptime('2022-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+    date = datetime.datetime.strptime('2023-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
     timestamp = int(datetime.datetime.timestamp(date))
 
-    print(ex.exchange(timestamp, Asset('BTC', 'binanceus'), Asset('USDT', 'binanceus')))
+    print(ex.exchange(timestamp, Asset('BTC', 'bybit'), Asset('USDT', 'bybit')))
     for i in range(50):
-        print(ex.exchange(timestamp, Asset('BTC', 'binanceus'), Asset('USDT', 'binanceus')))
+        print(ex.exchange(timestamp, Asset('BTC', 'bybit'), Asset('USDT', 'bybit')))
     for i in range(50):
-        print(ex.exchange(timestamp, Asset('USDT', 'binanceus'), Asset('BTC', 'binanceus')))
-    print(ex.exchange(timestamp, Asset('KAT', 'binanceus'), Asset('BTC', 'binanceus')))
+        print(ex.exchange(timestamp, Asset('USDT', 'bybit'), Asset('BTC', 'bybit')))
+    print(ex.exchange(timestamp, Asset('KAT', 'bybit'), Asset('BTC', 'bybit')))

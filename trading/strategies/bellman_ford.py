@@ -1,27 +1,30 @@
 import datetime
+from typing import List
 
 import numpy as np
 
 from trading.algorithms.bellman_ford import find_negative_cycle
-from trading.algorithms.utils import assets_to_edges_list, nodes_to_assets
+from trading.algorithms.utils import assets_to_edges_list, nodes_to_assets, cycle_to_edges_list
 from trading.asset import Asset
+from trading.blockchain import Blockchain
 from trading.blockchain.runner import Runner
 from trading.common.blockchain_logger import logger
 from trading.common.utils import *
+from trading.portfolio.portfolio import Portfolio
 from trading.simulation import simulate
 
 
 @simulate
 def strategy_bellman_ford_generator(*args,
-                                    blockchain,
-                                    timestamp,
-                                    timespan,
-                                    portfolio,
-                                    platforms,
-                                    symbols,
-                                    assets,
-                                    max_trade_ratio,
-                                    min_spread=0.015,
+                                    blockchain: Blockchain,
+                                    timestamp: int,
+                                    timespan: int,
+                                    portfolio: Portfolio,
+                                    platforms: List[str],
+                                    symbols: List[str],
+                                    assets: List[Asset],
+                                    max_trade_ratio: float,
+                                    min_spread: float,
                                     **kwargs):
     runner = Runner(blockchain)
 
@@ -34,8 +37,11 @@ def strategy_bellman_ford_generator(*args,
 
     best_start = None
 
-    for platform in portfolio.keys():
-        for symbol, value in portfolio[platform].items():
+    for platform, wallet in portfolio.items():
+        for symbol, value in wallet.items():
+            if f'{platform}_{symbol}' not in nodes_mapping:
+                continue
+
             cycle_nodes = find_negative_cycle(edges_list, nodes_mapping[f'{platform}_{symbol}'])
 
             if cycle_nodes is None:
@@ -79,8 +85,10 @@ def strategy_bellman_ford_generator(*args,
         else:
             logger.info(green(f'Benefit {best_trade - result}'))
 
-        portfolio[best_start.platform][best_start.symbol] -= result
-        portfolio[best_cycle[-1].platform][best_start.symbol] = portfolio[best_cycle[-1].platform].get(
-            best_start.symbol,
-            0) + best_trade
-    return timestamp, max_benefit, real_benefit, best_cycle, TradeNetwork(edges_list, assets)
+        portfolio.delta(best_start.platform, best_start.symbol, delta=-result)
+        portfolio.delta(best_cycle[-1].platform, best_start.symbol, delta=best_trade)
+    return timestamp, max_benefit, real_benefit, best_cycle, TradeNetwork(edges_list,
+                                                                          assets,
+                                                                          cycle_to_edges_list(best_cycle,
+                                                                                              nodes_mapping),
+                                                                          true_neg=real_benefit > 0)

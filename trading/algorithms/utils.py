@@ -31,3 +31,19 @@ def nodes_to_assets(nodes: List[int], assets: List[Asset]) -> List[Asset]:
     for node in nodes:
         result.append(assets[node])
     return result
+
+
+def cycle_to_edges_list(assets: List[Asset], nodes_mapping: Dict[str, int]) -> List[Edge]:
+    if assets is None or len(assets) == 0:
+        return []
+    edges_list = []
+
+    from_asset = assets[0]
+    for to_asset in assets[1:]:
+        from_node = nodes_mapping[f'{from_asset.platform}_{from_asset.symbol}']
+
+        to_node = nodes_mapping[f'{to_asset.platform}_{to_asset.symbol}']
+        edges_list.append(Edge(from_asset, from_node, to_asset, to_node, weight=0))
+        from_asset = to_asset
+
+    return edges_list

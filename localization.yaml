@@ -1,0 +1,135 @@
+arbitrage_table:
+  en: "Arbitrage Table"
+  ru: "Таблица арбитража"
+
+report_table:
+  en: "Report Table"
+  ru: "Таблица данных"
+
+portfolio_asset:
+  en: "Portfolio Asset"
+  ru: "Актив портфеля"
+
+initial_portfolio_amount:
+  en: "Initial Portfolio amount"
+  ru: "Начальный баланс портфеля"
+
+primary_granularity:
+  en: "Primary Granularity"
+  ru: "Частота совершения сделки"
+
+secondary_granularity:
+  en: "Secondary Granularity"
+  ru: "Как часто проверять сделку?"
+
+date_range:
+  en: "Date Range"
+  ru: "Диапазон дат"
+
+start_time:
+  en: "Start time"
+  ru: "Время начала"
+
+end_time:
+  en: "End time"
+  ru: "Время окончания"
+
+min_spread:
+  en: "Min spread"
+  ru: "Минимальная прибыль"
+
+max_trade_ratio:
+  en: "Max trade ratio"
+  ru: "Максимальный объем сделки"
+
+run_button:
+  en: "Run!"
+  ru: "Старт!"
+
+view_arbitrages:
+  en: "View arbitrages"
+  ru: "Посмотреть арбитраж"
+
+fees_estimation:
+  en: "Enable fees estimation? (experimental)"
+  ru: "С учетом комиссии бирж (экспериментально)"
+
+step_slider:
+  en: "Step Slider"
+  ru: "Цепочка сделки"
+
+something_went_wrong:
+  en: "Something went wrong..."
+  ru: "Что-то пошло не так..."
+
+something_went_wrong_1:
+  en: "Something went wrong on our side...
+                         
+We are sorry. 
+Please, provide us with this session id:"
+  ru: "Что-то пошло не так по нашей вине...
+                         
+Мы сожалеем.
+Пожалуйста, пришлите нам номер ошибки:"
+
+something_went_wrong_2:
+  en: "so that we could identify the issue
+and prevent such cases in the future.
+
+Thank you!"
+  ru: "чтобы мы могли определить проблему
+и предотвратить ее в будущем.
+
+Спасибо!"
+
+field_not_empty:
+  en: "Field should not be empty."
+  ru: "Поле не должно быть пустым"
+
+dates:
+  en: "Dates"
+  ru: "Даты"
+
+times:
+  en: "Times"
+  ru: "Время"
+
+predicted:
+  en: "Predicted"
+  ru: "Предсказано"
+
+real:
+  en: "Real"
+  ru: "Реально"
+
+coins:
+  en: "Coins"
+  ru: "Монеты"
+
+trades:
+  en: "Trades"
+  ru: "Сделки"
+
+portfolio_platforms:
+  en: "Portfolio Initialization"
+  ru: "Баланс"
+
+strategy_name:
+  en: "Select strategy"
+  ru: "Выбрать стратегию"
+
+platforms:
+  en: "Select platforms"
+  ru: "Выберите платформы"
+
+assets:
+  en: "Select symbols"
+  ru: "Выберите коины"
+
+keep_only_neg:
+  en: "Keep only exploited strategy"
+  ru: "Оставить только использованный цикл"
+
+result_portfolio:
+  en: "Resulting portfolio"
+  ru: "Итоговые балансы"

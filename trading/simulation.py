@@ -7,6 +7,7 @@ from trading.blockchain import Blockchain
 from trading.common.blockchain_logger import logger
 from trading.common.constants import *
 from trading.common.utils import *
+from trading.portfolio.portfolio import Portfolio
 
 
 def generate(fn):
@@ -34,7 +35,7 @@ def simulate(fn):
                 start_timestamp: int,
                 end_timestamp: int,
                 timespan: int,
-                portfolio: dict,
+                portfolio: Portfolio,
                 platforms: List[str],
                 symbols: List[str],
                 primary_granularity: int = DAY,
@@ -47,8 +48,12 @@ def simulate(fn):
                 'real': [],
                 'coins': [],
                 'dates': [],
+                'trades': [],
             },
         }
+
+        initial_portfolio = copy.deepcopy(portfolio)
+
         graphs_history = []
 
         total_usdt_before = 0
@@ -62,10 +67,13 @@ def simulate(fn):
 
         prices = []
 
+        trades_count = [0]
+
         def simulate_iteration():
             timestamp = start_timestamp
 
-            secondary_granularity_data = copy.deepcopy(portfolio)
+            # TODO: rework that to use Portfolio class
+            secondary_granularity_data = portfolio.clone()
 
             last_secondary_timestamp = start_timestamp
             last_primary_timestamp = start_timestamp
@@ -99,18 +107,25 @@ def simulate(fn):
 
                 # Report formation:
                 if max_benefit > 0:
+                    trades_count[0] += 1
+
                     report['predicted'].append(max_benefit)
                     report['real'].append(real_benefit)
                     report['coins'].append('-'.join(map(lambda x: x.symbol + f'({x.platform})', coins)))
                     report['dates'].append(datetime.datetime.fromtimestamp(timestamp))
-                    for platform, wallet in portfolio.items():
-                        for asset, value in wallet.items():
-                            if f'{platform}_{asset}' not in report:
-                                report[f'{platform}_{asset}'] = []
-                                report[f'{platform}_{asset}_change'] = []
-                            report[f'{platform}_{asset}'].append(value)
-                            report[f'{platform}_{asset}_change'].append(
-                                value - secondary_granularity_data[platform].get(asset, 0))
+                    report['trades'].append(trades_count[0])
+
+                    for platform in platforms:
+                        for symbol in symbols:
+                            if f'{platform}_{symbol}' not in report:
+                                report[f'{platform}_{symbol}'] = []
+                                report[f'{platform}_{symbol}_change'] = []
+
+                            value = portfolio.get(platform, symbol, replace=0)
+                            report[f'{platform}_{symbol}'].append(value)
+                            report[f'{platform}_{symbol}_change'].append(
+                                value - secondary_granularity_data.get(platform, symbol, replace=0))
+
                     graphs_history.append(trade_network)
 
                 if (timestamp - last_primary_timestamp) // primary_granularity >= 1:
@@ -135,15 +150,15 @@ def simulate(fn):
                     logger.info('Benefit:')
                     for platform, wallet in portfolio.items():
                         for asset, value in wallet.items():
-                            if float(wallet[asset]) - secondary_granularity_data[platform].get(asset, 0) > 0:
+                            if float(wallet[asset]) - secondary_granularity_data.get(platform, asset, replace=0) > 0:
                                 logger.info(green(
-                                    f'> {asset} ({platform}): {float(wallet[asset]) - secondary_granularity_data[platform].get(asset, 0)}'))
+                                    f'> {asset} ({platform}): {float(wallet[asset]) - secondary_granularity_data.get(platform, asset, replace=0)}'))
                             else:
                                 logger.info(
                                     yellow(
-                                        f'> {asset} ({platform}): {float(wallet[asset]) - secondary_granularity_data[platform].get(asset, 0)}'))
+                                        f'> {asset} ({platform}): {float(wallet[asset]) - secondary_granularity_data.get(platform, asset, replace=0)}'))
 
-                    secondary_granularity_data = copy.deepcopy(portfolio)
+                    secondary_granularity_data = portfolio.clone()
                     logger.info(30 * '*')
                     last_secondary_timestamp = timestamp
 
@@ -154,6 +169,8 @@ def simulate(fn):
                     'prices': prices,
                     'report': report,
                     'graphs_history': graphs_history,
+                    'initial_portfolio': initial_portfolio,
+                    'curr_portfolio': portfolio,
                 }
 
         yield from simulate_iteration()
@@ -172,6 +189,13 @@ def simulate(fn):
         else:
             logger.info(green(f'Profit: {total_usdt_after - total_usdt_before}'))
 
-        return end_timestamp, report, graphs_history
+        return {
+            'end_timestamp': end_timestamp,
+            'prices': prices,
+            'report': report,
+            'graphs_history': graphs_history,
+            'initial_portfolio': initial_portfolio,
+            'curr_portfolio': portfolio,
+        }
 
     return wrapper

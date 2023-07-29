@@ -6,38 +6,36 @@ body, html {
     font-family: 'Lato', sans-serif
 }
 
-header {
-    position: relative;
-    width: 100%;
-    padding: 30px 0 !important;
-    background: white !important;
-    box-shadow: 0 0 5px #bec6cf;
-    font-family: 'Lato', sans-serif
-}
-
-header .nav-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 1000px;
-    max-width: 90%;
-    margin: auto
-}
-
-header .nav-wrapper nav {
-    display: flex
-}
-
-header .nav-wrapper .logo {
+.logo {
     display: inline-block;
-    width: 40px
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
 }
 
-header .nav-wrapper a {
+.nav-wrapper .container {
     color: #70829d;
     font-size: 1em;
     text-decoration: none;
-    transition: all .3s ease-out
+    transition: all .3s ease-out;
+
+    margin: 7px 4px;
+}
+
+.navbar-expand-md {
+    justify-content: space-around !important;
+}
+
+@media (max-width: 600px) {
+    .nav-wrapper .row:last-child {
+        justify-content: center !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .platform-balance {
+        margin-bottom: 10px;
+    }
 }
 
 .home-template .container {
@@ -106,26 +104,6 @@ header .nav-wrapper a {
     font-size: .9em
 }
 
-.dash-template h1 {
-    display: inline-block;
-    margin: 0;
-    font-size: 1.5em
-}
-
-.dash-template .logo {
-    width: 40px;
-    margin-right: 20px
-}
-
-.dash-template .logo:hover {
-    opacity: .7
-}
-
-.dash-template .nav-wrapper a {
-    display: flex;
-    align-items: center
-}
-
 #dash-container {
     width: 1200px;
     max-width: 95%;
@@ -162,7 +140,7 @@ nav a i {
     margin-right: 5px
 }
 
-.row {
+.control-row {
     display: flex;
     width: 100%;
     margin-bottom: 3px;
@@ -183,10 +161,6 @@ nav a i {
 
 #trading-graph {
     height: 900px;
-}
-
-#bar-plots {
-    margin-left: 15px;
 }
 
 #prices-plot {
@@ -223,31 +197,12 @@ nav a i {
     margin-bottom: 15px;
 }
 
-#time-start-control {
-    width: 47%;
-}
-
-#time-end-control {
-    width: 47%;
-}
-
 #platforms-select-control {
-    padding-left: 15px;
-    width: 100%;
-}
-
-#assets-select-control {
-    padding-left: 15px;
     width: 100%;
 }
 
 #min-spread-control {
     width: 100%;
-}
-
-#max-trade-ratio-control {
-    width: 100%;
-    padding-left: 15px;
 }
 
 #slider-max-trade-ratio-control {
@@ -282,10 +237,6 @@ nav a i {
     width: 100%;
 }
 
-#select-secondary-granularity-control {
-    padding-left: 15px;
-}
-
 #simulation-progress-bar {
     margin-top: 15px;
     width: 100%;
@@ -314,6 +265,11 @@ hr {
     cursor: default !important;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji" !important;
     line-height: 1.55 !important;
+
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 header .nav-wrapper {
@@ -338,4 +294,14 @@ header .nav-wrapper {
 
 #step-control .mantine-Slider-markLabel {
     font-size: 8px;
+}
+
+.accordion-button {
+    color: crimson !important;
+    font-weight: bold !important;
+}
+
+#error-session-id {
+    background-color: rgba(95, 105, 136, 0.1);
+    border-radius: 5px;
 }

@@ -10,3 +10,6 @@ class Edge:
 
         self.to_node = to_node
         self.weight = weight
+
+    def __eq__(self, other):
+        return self.from_asset == other.from_asset and self.to_asset == other.to_asset and self.from_node == other.from_node and self.to_node == other.to_node
