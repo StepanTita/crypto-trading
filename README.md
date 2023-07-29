@@ -12,3 +12,5 @@ Kraken historical data: https://drive.google.com/drive/folders/1jI3mZvrPbInNAEaI
 # TODO: clear cache sometimes
 
 # # TODO URGENT: rework algo to edge list everywhere
+
+pip list --format=freeze > requirements.txt

@@ -14,6 +14,7 @@ charset-normalizer==3.2.0
 click==8.0.4
 cryptography==41.0.1
 dash==2.11.1
+dash-bootstrap-components==1.4.2
 dash-core-components==2.0.0
 dash-cytoscape==0.3.0
 dash-extensions==0.1.13
@@ -39,6 +40,7 @@ numpy==1.25.1
 pandas==1.5.3
 pip==23.1.2
 plotly==5.9.0
+py==1.11.0
 pycares==4.3.0
 pycparser==2.21
 pymongo==3.12.0
