@@ -13,8 +13,12 @@ services:
       - type: bind
         source: ./config.dev.yaml
         target: /config.yaml
+      - type: bind
+        source: ./localization.yaml
+        target: /config.yaml
     environment:
       CONFIG: /config.yaml
+      LOCALE: /localization.yaml
     networks:
       - default
 
