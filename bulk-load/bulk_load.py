@@ -51,6 +51,8 @@ def load_exchange(db: Database, ex: ExchangesAPI, symbols: List[str], platforms:
 def main():
     cfg = get_config(os.getenv('CONFIG'))
 
+    platforms = [platform.replace('_', '') for platform in cfg['platforms']]
+
     client = MongoClient(cfg['database']['host'], cfg['database']['port'])
 
     start_date = datetime.datetime.strptime(cfg['period']['from'], '%Y-%m-%d %H:%M:%S')
@@ -59,11 +61,12 @@ def main():
     end_date = datetime.datetime.strptime(cfg['period']['to'], '%Y-%m-%d %H:%M:%S')
     end_timestamp = int(datetime.datetime.timestamp(end_date))
 
-    ex = ExchangesAPI(exchanges_names=cfg['platforms'])
+    ex = ExchangesAPI(exchanges_names=platforms)
 
     db = client['crypto_exchanges']
 
-    load_exchange(db, ex, cfg['symbols'], cfg['platforms'], start_timestamp, end_timestamp, HOUR)
+    load_exchange(db, ex, cfg['symbols'], platforms, start_timestamp,
+                  end_timestamp, HOUR)
 
 
 if __name__ == '__main__':

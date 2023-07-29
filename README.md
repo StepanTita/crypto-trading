@@ -13,4 +13,10 @@ Kraken historical data: https://drive.google.com/drive/folders/1jI3mZvrPbInNAEaI
 
 # # TODO URGENT: rework algo to edge list everywhere
 
+```bash
 pip list --format=freeze > requirements.txt
+```
+
+```bash
+docker-compose -f docker-compose.yaml up -d --build
+```
