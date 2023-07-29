@@ -15,7 +15,7 @@ services:
         target: /config.yaml
       - type: bind
         source: ./localization.yaml
-        target: /config.yaml
+        target: /localization.yaml
     environment:
       CONFIG: /config.yaml
       LOCALE: /localization.yaml
