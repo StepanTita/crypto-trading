@@ -4,9 +4,8 @@ Harness the power of Python and Dash Framework to explore and visualize real-tim
 crypto platforms!
 
 ## Demo
+
 https://github.com/StepanTita/crypto-trading/assets/44279105/10cde706-9682-4f53-b00e-559659c83f7a
-
-
 
 ## Features 🌟
 
@@ -49,7 +48,15 @@ pip install -r requirements.txt
 3. Add `CONFIG` environment variable to contain the path to the config file.
 4. Add `LOCALE` environment variable to contain the path to `localization.yaml`
 5. Change current directory to backend: `cd backend`
-4. Start the server with `python wsgi.py` and access UI on localhost:9090
+4. Start the server with `python wsgi.py` and access UI on localhost:8080
+
+or with docker:
+
+```bash
+docker-compose -f docker-compose.yaml up -d
+```
+
+and access UI on localhost:9090
 
 ## Configuration ⚙️
 
