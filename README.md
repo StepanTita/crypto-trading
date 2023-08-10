@@ -1,22 +1,61 @@
-# crypto-trading
+# Crypto Arbitrage Analyzer with Dash 💼 📈
 
-Kraken historical data: https://drive.google.com/drive/folders/1jI3mZvrPbInNAEaIOoMbWvFfgRDZ44TT
-(the timestamps there are weird, will need to make them aligned)
+Harness the power of Python and Dash Framework to explore and visualize real-time arbitrage opportunities across various
+crypto platforms!
 
-# TODO: add logs to UI
+## Features 🌟
 
-# TODO: add portfolio controls
+- **Live Arbitrage Visualization**: Witness real-time differences in asset prices across platforms.
+- **Interactive Dashboards**: Deep dive into data with intuitive and dynamic charts.
+- **Cross-Platform Analysis**: Compare opportunities across multiple crypto exchanges.
+- **Responsive Design**: Access your analyzer on any device.
 
-# TODO: refactor CSS
+## Built With 🛠️
 
-# TODO: clear cache sometimes
+- [Python](https://www.python.org/)
+- [Dash Framework](https://plotly.com/dash/)
 
-# # TODO URGENT: rework algo to edge list everywhere
+## Getting Started 🚀
+
+### Prerequisites
+
+- Python 3.10.x
+- pip
+
+or
+
+- docker
+- docker-compose
+
+### Installation
+
+1. Clone the repo:
 
 ```bash
-pip list --format=freeze > requirements.txt
+git clone https://github.com/StepanTita/crypto-trading.git
 ```
 
+2. Install necessary python packages:
+
 ```bash
-docker-compose -f docker-compose.yaml up -d --build
+pip install -r requirements.txt
 ```
+
+3. Add `CONFIG` environment variable to contain the path to the config file.
+4. Add `LOCALE` environment variable to contain the path to `localization.yaml`
+5. Change current directory to backend: `cd backend`
+4. Start the server with `python wsgi.py` and access UI on localhost:9090
+
+## Configuration ⚙️
+
+- **config.yaml** - this file configures the dates range, symbols, and platforms, as well as database connection
+- **backend/config.py** - is the flask configuration file, normally you should not use that
+- **localization.yaml** -
+
+## License 📄
+
+This project is licensed under the MIT License. See the [LICENSE.md](LICENSE.md) file for details.
+
+## TODO:
+
+- p2p arbitrage

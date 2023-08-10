@@ -11,7 +11,7 @@ services:
       - '9090:8080'
     volumes:
       - type: bind
-        source: ./config.dev.yaml
+        source: ./config.yaml
         target: /config.yaml
       - type: bind
         source: ./localization.yaml
@@ -43,7 +43,7 @@ services:
     container_name: bulk_load
     volumes:
       - type: bind
-        source: ./config.dev.yaml
+        source: ./config.yaml
         target: /config.yaml
     environment:
       CONFIG: /config.yaml

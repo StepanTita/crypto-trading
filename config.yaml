@@ -1,0 +1,17 @@
+database:
+  host: mongo_db
+  port: 27017
+platforms:
+  - binance_us
+  #  - bybit
+  - huobi
+  - okx
+symbols:
+  - "BTC/USDT"
+  - "LTC/BTC"
+  - "ETH/BTC"
+  - "ETH/USDT"
+  - "LTC/USDT"
+period:
+  from: "2023-01-01 00:00:00"
+  to: "2023-04-01 00:00:00"
