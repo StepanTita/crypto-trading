@@ -3,6 +3,11 @@
 Harness the power of Python and Dash Framework to explore and visualize real-time arbitrage opportunities across various
 crypto platforms!
 
+## Demo
+https://github.com/StepanTita/crypto-trading/assets/44279105/10cde706-9682-4f53-b00e-559659c83f7a
+
+
+
 ## Features 🌟
 
 - **Live Arbitrage Visualization**: Witness real-time differences in asset prices across platforms.
